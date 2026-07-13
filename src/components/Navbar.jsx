@@ -53,7 +53,7 @@ export const Navbar = () => {
           {/* Logo / Brand */}
           <a href="#" className="flex items-center space-x-2 text-white font-display font-bold text-lg tracking-tight group">
             <span className="w-2 h-2 rounded-full bg-electric-blue group-hover:scale-150 transition-transform duration-300" />
-            <span>dipesh.</span>
+            <span>Dipesh</span>
           </a>
 
           {/* Desktop Nav Items */}

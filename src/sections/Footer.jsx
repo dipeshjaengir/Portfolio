@@ -20,7 +20,7 @@ export const Footer = () => {
 
         {/* Center Minimal Branding */}
         <a href="#" className="font-display font-black text-white text-md tracking-tight hover:text-electric-blue transition-colors">
-          dipesh.
+          Dipesh
         </a>
 
         {/* Right social indicators */}
