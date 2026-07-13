@@ -14,6 +14,7 @@ import {
   Shield,
   Globe
 } from "lucide-react";
+import { Github } from "../components/SocialIcons";
 
 const iconMap = {
   Code,
@@ -26,7 +27,8 @@ const iconMap = {
   Database,
   GitBranch,
   GitFork,
-  Shield
+  Shield,
+  Github
 };
 
 export const Skills = () => {
