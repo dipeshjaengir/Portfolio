@@ -1,7 +1,33 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { skillCategories } from "../data/skills";
-import * as Icons from "lucide-react";
+import { 
+  Code, 
+  Layers, 
+  Terminal, 
+  FileCode, 
+  Server, 
+  Cpu, 
+  Database, 
+  GitBranch, 
+  GitFork, 
+  Shield,
+  Globe
+} from "lucide-react";
+
+const iconMap = {
+  Code,
+  Layers,
+  Terminal,
+  FileCode,
+  Codepen: Globe,
+  Server,
+  Cpu,
+  Database,
+  GitBranch,
+  GitFork,
+  Shield
+};
 
 export const Skills = () => {
   return (
@@ -40,9 +66,9 @@ export const Skills = () => {
                 {/* Skills List */}
                 <div className="space-y-4">
                   {category.skills.map((skill) => {
-                    // Dynamically resolve icon from Lucide React
+                    // Resolve icon from static iconMap
                     const IconName = skill.icon;
-                    const IconComponent = Icons[IconName] || Icons.Cpu;
+                    const IconComponent = iconMap[IconName] || Cpu;
 
                     return (
                       <div key={skill.name} className="flex items-center justify-between group/item">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ScrollProgress } from "./components/ScrollProgress";
@@ -25,10 +25,14 @@ import { Footer } from "./sections/Footer";
 const Portfolio = () => {
   const [loading, setLoading] = useState(true);
 
+  const handleLoadingComplete = useCallback(() => {
+    setLoading(false);
+  }, []);
+
   return (
     <>
       {/* Premium Loader */}
-      <LoadingScreen onComplete={() => setLoading(false)} />
+      <LoadingScreen onComplete={handleLoadingComplete} />
 
       {!loading && (
         <div className="relative min-h-screen text-white select-none">
