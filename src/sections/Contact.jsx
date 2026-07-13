@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { Github, Linkedin, Instagram } from "../components/SocialIcons";
 import emailjs from "@emailjs/browser";
