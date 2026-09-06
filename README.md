@@ -111,10 +111,12 @@ To personalize the portfolio, replace the following placeholder items:
 * **Profile Image**: Replace `src/assets/profile.jpg` with your final professional portrait.
 * **Resume**: Replace `public/Resume_Dipesh_Jangir.pdf` with your actual CV/Resume PDF.
 * **Project Screenshots**: Save your mockups under `src/assets/projects/` with filenames matching the project IDs to automatically render screenshots:
+  * `kapriink-tattoo.jpg`
+  * `yashita-portfolio.jpg`
+  * `lily-portfolio.jpg`
+  * `be-boss.jpg`
+  * `khushi-portfolio.jpg`
   * `shree-g-mart.jpg`
-  * `resumepro-ai.jpg`
   * `smart-recruitment-portal.jpg`
   * `gym-management-saas.jpg`
-  * `restaurant-website.jpg`
-  * `mediconnect.jpg`
   *(If screenshots are missing, cards will automatically fall back to styled glassmorphic visual gradient layers.)*

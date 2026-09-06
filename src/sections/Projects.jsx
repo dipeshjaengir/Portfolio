@@ -3,16 +3,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { projects } from "../data/projects";
 import { ProjectCard } from "../components/ProjectCard";
 
-const filterOptions = ["All", "Full-Stack", "AI & SaaS", "UI/UX"];
+const filterOptions = ["All", "Portfolios", "Full-Stack & Apps", "SaaS & Studio"];
 
 export const Projects = () => {
   const [filter, setFilter] = useState("All");
 
   const filteredProjects = projects.filter((project) => {
+    const cat = project.category.toLowerCase();
     if (filter === "All") return true;
-    if (filter === "Full-Stack") return project.category.toLowerCase().includes("full-stack") || project.category.toLowerCase().includes("enterprise");
-    if (filter === "AI & SaaS") return project.category.toLowerCase().includes("ai") || project.category.toLowerCase().includes("saas");
-    if (filter === "UI/UX") return project.category.toLowerCase().includes("ui") || project.category.toLowerCase().includes("booking") || project.category.toLowerCase().includes("health");
+    if (filter === "Portfolios") return cat.includes("portfolio");
+    if (filter === "Full-Stack & Apps") return cat.includes("full-stack") || cat.includes("enterprise") || cat.includes("application");
+    if (filter === "SaaS & Studio") return cat.includes("saas") || cat.includes("studio") || cat.includes("booking");
     return true;
   });
 
