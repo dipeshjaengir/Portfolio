@@ -34,23 +34,6 @@ export const projects = [
     accentColor: "#EC4899"
   },
   {
-    id: "yashita-portfolio",
-    title: "Yashita Portfolio",
-    clientMeta: "India · Textile & Visual Artist",
-    description: "A textile and visual artist working across murals, canvas paintings and custom artwork. Her portfolio brings together her artwork, creative journey, services and artistic projects.",
-    category: "Portfolios",
-    techStack: ["React", "Tailwind CSS", "Framer Motion", "JavaScript"],
-    features: [
-      "Fluid section transitions with responsive mobile drawer navigation.",
-      "Interactive skill cards, project showcase grid, and contact module.",
-      "Ultra-fast performance with modern Vite build optimization."
-    ],
-    github: "https://github.com/dipeshjaengir/yashita_portfolio",
-    demo: "https://yashita-portfolio-ten.vercel.app",
-    gradient: "from-indigo-600/30 via-blue-500/20 to-cyan-600/10",
-    accentColor: "#6366F1"
-  },
-  {
     id: "lily-portfolio",
     title: "Lily Portfolio",
     clientMeta: "Santa Cruz, USA · Painting Artist",
@@ -66,6 +49,23 @@ export const projects = [
     demo: "https://lily-portfolio-beta.vercel.app",
     gradient: "from-emerald-600/30 via-teal-500/20 to-cyan-600/10",
     accentColor: "#14B8A6"
+  },
+   {
+    id: "yashita-portfolio",
+    title: "Yashita Portfolio",
+    clientMeta: "India · Textile & Visual Artist",
+    description: "A textile and visual artist working across murals, canvas paintings and custom artwork. Her portfolio brings together her artwork, creative journey, services and artistic projects.",
+    category: "Portfolios",
+    techStack: ["React", "Tailwind CSS", "Framer Motion", "JavaScript"],
+    features: [
+      "Fluid section transitions with responsive mobile drawer navigation.",
+      "Interactive skill cards, project showcase grid, and contact module.",
+      "Ultra-fast performance with modern Vite build optimization."
+    ],
+    github: "https://github.com/dipeshjaengir/yashita_portfolio",
+    demo: "https://yashita-portfolio-ten.vercel.app",
+    gradient: "from-indigo-600/30 via-blue-500/20 to-cyan-600/10",
+    accentColor: "#6366F1"
   },
   {
     id: "be-boss",
