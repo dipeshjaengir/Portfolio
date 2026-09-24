@@ -4,7 +4,6 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { ScrollProgress } from "./components/ScrollProgress";
 import { Navbar } from "./components/Navbar";
 import { BackgroundGrid } from "./components/BackgroundGrid";
-import { CustomCursor } from "./components/CustomCursor";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { NotFound } from "./components/NotFound";
 
@@ -44,9 +43,6 @@ const Portfolio = () => {
 
           {/* Vercel grid and background moving glows */}
           <BackgroundGrid />
-
-          {/* Aceternity style custom glowing cursor trail */}
-          <CustomCursor />
 
           {/* Main Content Layout */}
           <main className="relative z-10 w-full">

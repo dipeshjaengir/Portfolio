@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, Code, Layers, Shield, Sparkles } from "lucide-react";
+import { ExternalLink, Code, Layers, Shield } from "lucide-react";
 import { Github } from "./SocialIcons";
 import { MagneticButton } from "./MagneticButton";
 
@@ -9,7 +9,7 @@ export const ProjectCard = ({ project }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showFeatures, setShowFeatures] = useState(false);
 
-  // We can render some nice visual assets if the screenshot doesn't exist yet
+  // We can render clean visual assets if the screenshot doesn't exist yet
   const renderAbstractPlaceholder = () => {
     return (
       <div className={`relative w-full h-full bg-gradient-to-br ${project.gradient} flex flex-col justify-between p-6 overflow-hidden select-none`}>
@@ -21,15 +21,12 @@ export const ProjectCard = ({ project }) => {
           <span className="text-[10px] tracking-widest text-zinc-400 uppercase font-mono bg-zinc-950/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-zinc-800/80">
             {project.category}
           </span>
-          <Sparkles className="w-4 h-4 text-electric-blue/80 animate-pulse" />
         </div>
 
         {/* Center Graphic */}
         <div className="flex flex-col items-center justify-center space-y-3 z-10 flex-grow py-4">
           <div className="p-4 bg-zinc-950/80 backdrop-blur-md rounded-2xl border border-zinc-800/80 shadow-2xl group-hover:scale-110 group-hover:border-electric-blue/30 transition-all duration-500">
-            {project.id.includes("ai") ? (
-              <Sparkles className="w-10 h-10 text-white" />
-            ) : project.id.includes("recruitment") || project.id.includes("connect") ? (
+            {project.id.includes("recruitment") || project.id.includes("connect") ? (
               <Shield className="w-10 h-10 text-white" />
             ) : project.id.includes("commerce") || project.id.includes("mart") ? (
               <Layers className="w-10 h-10 text-white" />

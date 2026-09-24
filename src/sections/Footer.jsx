@@ -14,7 +14,7 @@ export const Footer = () => {
             &copy; {currentYear} Dipesh Jangir. All rights reserved.
           </p>
           <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-mono">
-            Designed & Engineered with React 19 &amp; Tailwind CSS
+            {/* Designed & Engineered with React 19 &amp; Tailwind CSS */}
           </p>
         </div>
 
