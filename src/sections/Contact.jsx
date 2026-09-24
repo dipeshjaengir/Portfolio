@@ -2,53 +2,45 @@ import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { Github, Linkedin, Instagram } from "../components/SocialIcons";
-import emailjs from "@emailjs/browser";
 import { MagneticButton } from "../components/MagneticButton";
 
 export const Contact = () => {
   const formRef = useRef(null);
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(false);
-
-  // EmailJS credentials placeholders
-  // Users can create a .env file and write VITE_EMAILJS_SERVICE_ID, etc.
-  const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "YOUR_SERVICE_ID";
-  const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID";
-  const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "YOUR_PUBLIC_KEY";
+  const [validationError, setValidationError] = useState("");
+  const [waLink, setWaLink] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(false);
+    setValidationError("");
 
-    // If the user hasn't configured EmailJS keys, trigger a mock success response so the UI stays fully testable
-    if (SERVICE_ID === "YOUR_SERVICE_ID" || TEMPLATE_ID === "YOUR_TEMPLATE_ID" || PUBLIC_KEY === "YOUR_PUBLIC_KEY") {
-      console.warn(
-        "EmailJS: Service, Template, or Public Key is not configured. Simulating mock success response."
-      );
-      setTimeout(() => {
-        setLoading(false);
-        setSuccess(true);
-        formRef.current?.reset();
-      }, 1500);
+    const form = formRef.current;
+    if (!form) return;
+
+    const name = form.user_name?.value?.trim();
+    const email = form.user_email?.value?.trim();
+    const subject = form.subject?.value?.trim();
+    const message = form.message?.value?.trim();
+
+    if (!name || !email || !subject || !message) {
+      setValidationError("Please fill out all fields before sending.");
       return;
     }
 
-    emailjs
-      .sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current, PUBLIC_KEY)
-      .then(
-        (result) => {
-          setLoading(false);
-          setSuccess(true);
-          formRef.current?.reset();
-        },
-        (error) => {
-          console.error("EmailJS Error:", error.text);
-          setLoading(false);
-          setError(true);
-        }
-      );
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setValidationError("Please enter a valid email address.");
+      return;
+    }
+
+    const rawMessage = `Hi Dipesh,\n\nName: ${name}\nEmail: ${email}\nSubject: ${subject}\n\nMessage:\n${message}`;
+    const encodedText = encodeURIComponent(rawMessage);
+    const url = `https://wa.me/917742111581?text=${encodedText}`;
+
+    setWaLink(url);
+    window.open(url, "_blank", "noopener,noreferrer");
+    setSuccess(true);
+    form.reset();
   };
 
   return (
@@ -100,8 +92,8 @@ export const Contact = () => {
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-display font-bold text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Phone</h4>
-                  <a href="tel:+917742111581" className="text-sm md:text-md text-white hover:text-electric-blue transition-colors font-sans font-light">
+                  <h4 className="font-display font-bold text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Phone / WhatsApp</h4>
+                  <a href="https://wa.me/917742111581" target="_blank" rel="noopener noreferrer" className="text-sm md:text-md text-white hover:text-electric-blue transition-colors font-sans font-light">
                     +91 7742111581
                   </a>
                 </div>
@@ -222,27 +214,17 @@ export const Contact = () => {
                       <MagneticButton range={20} className="w-full md:w-auto">
                         <button
                           type="submit"
-                          disabled={loading}
-                          className="flex items-center justify-center gap-2 py-3.5 px-7 bg-electric-blue hover:bg-blue-600 disabled:bg-blue-800 text-white font-medium rounded-xl text-xs md:text-sm shadow-lg shadow-electric-blue/10 hover:shadow-electric-blue/20 transition-all w-full md:w-auto cursor-pointer"
+                          className="flex items-center justify-center gap-2 py-3.5 px-7 bg-electric-blue hover:bg-blue-600 text-white font-medium rounded-xl text-xs md:text-sm shadow-lg shadow-electric-blue/10 hover:shadow-electric-blue/20 transition-all w-full md:w-auto cursor-pointer"
                         >
-                          {loading ? (
-                            <>
-                              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              <span>Sending message...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Send className="w-4 h-4" />
-                              <span>Send Message</span>
-                            </>
-                          )}
+                          <Send className="w-4 h-4" />
+                          <span>Send Message</span>
                         </button>
                       </MagneticButton>
                     </div>
 
-                    {error && (
-                      <p className="text-red-500 text-xs font-mono">
-                        Error delivering message. Please email directly.
+                    {validationError && (
+                      <p className="text-rose-500 text-xs font-mono mt-2">
+                        {validationError}
                       </p>
                     )}
                   </motion.form>
@@ -254,18 +236,28 @@ export const Contact = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full animate-bounce">
+                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full">
                       <CheckCircle2 className="w-12 h-12" />
                     </div>
                     <h3 className="font-display font-bold text-xl md:text-2xl text-white">
-                      Message Sent Successfully!
+                      WhatsApp is opening...
                     </h3>
                     <p className="text-zinc-400 font-sans text-xs md:text-sm font-light max-w-sm">
-                      Thank you for reaching out, Dipesh has received your message and will respond shortly.
+                      Your message has been formatted and pre-filled inside WhatsApp. Press send inside WhatsApp to deliver your message.
                     </p>
+                    {waLink && (
+                      <a
+                        href={waLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-electric-blue hover:text-blue-400 font-mono tracking-widest uppercase font-semibold underline cursor-pointer pt-2"
+                      >
+                        Re-open WhatsApp
+                      </a>
+                    )}
                     <button
                       onClick={() => setSuccess(false)}
-                      className="text-xs text-electric-blue hover:text-blue-400 font-mono tracking-widest uppercase font-semibold underline cursor-pointer pt-4"
+                      className="text-xs text-zinc-400 hover:text-white font-mono tracking-widest uppercase font-semibold cursor-pointer pt-2"
                     >
                       Send another message
                     </button>

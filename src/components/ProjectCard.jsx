@@ -18,9 +18,6 @@ export const ProjectCard = ({ project }) => {
         
         {/* Top Header */}
         <div className="flex justify-between items-center z-10">
-          <span className="text-[10px] tracking-widest text-zinc-400 uppercase font-mono bg-zinc-950/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-zinc-800/80">
-            {project.category}
-          </span>
         </div>
 
         {/* Center Graphic */}
@@ -66,6 +63,13 @@ export const ProjectCard = ({ project }) => {
     >
       {/* Top Banner (Image or Premium Placeholder) */}
       <div className="relative aspect-video w-full overflow-hidden border-b border-zinc-900 bg-zinc-950">
+        {/* Category Badge at Top of Card */}
+        <div className="absolute top-3 left-3 z-20">
+          <span className="text-[10px] tracking-widest text-zinc-300 uppercase font-mono bg-zinc-950/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-zinc-800/80 shadow-md">
+            {project.category}
+          </span>
+        </div>
+
         {!imageError ? (
           <img
             src={`/src/assets/projects/${project.id}.jpg`}
@@ -84,14 +88,16 @@ export const ProjectCard = ({ project }) => {
       {/* Body Content */}
       <div className="flex flex-col flex-grow p-6 relative">
         <div className="flex-grow">
-          {/* Category */}
-          <span className="text-[10px] tracking-widest text-electric-blue uppercase font-bold mb-2 block font-mono">
-            {project.category}
-          </span>
           {/* Title */}
-          <h3 className="font-display text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-electric-blue transition-colors">
+          <h3 className="font-display text-xl md:text-2xl font-bold text-white mb-1.5 group-hover:text-electric-blue transition-colors">
             {project.title}
           </h3>
+          {/* Highlighted Client Metadata (Location · Profession) */}
+          {project.clientMeta && (
+            <p className="text-xs font-mono text-electric-blue font-semibold tracking-wide mb-3">
+              {project.clientMeta}
+            </p>
+          )}
           {/* Description */}
           <p className="text-zinc-400 font-sans text-sm font-light leading-relaxed mb-4">
             {project.description}

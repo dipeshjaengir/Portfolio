@@ -2,8 +2,9 @@ export const projects = [
   {
     id: "pau-canelles-portfolio",
     title: "Pau Canelles Portfolio",
-    description: "A contemporary artist portfolio created for Pau Canelles, showcasing his artwork, creative projects, exhibitions, murals, and artistic practice through a visually immersive digital experience.",
-    category: "Personal Portfolio",
+    clientMeta: "Onda, Spain · Contemporary Artist",
+    description: "A contemporary artist working across painting, murals and exhibitions. His portfolio showcases his artwork, creative projects and artistic journey through a visual-focused experience.",
+    category: "Portfolios",
     techStack: ["React", "Tailwind CSS", "Framer Motion", "JavaScript"],
     features: [
       "Interactive portfolio showcasing fine art paintings, murals, and gallery exhibitions.",
@@ -18,7 +19,8 @@ export const projects = [
   {
     id: "kapriink-tattoo",
     title: "KaprInk Tattoo",
-    description: "A visual digital portfolio and booking platform created for a tattoo studio, designed to showcase custom tattoo artwork, artist identity, and consultation requests.",
+    clientMeta: "South Jordan, Utah, USA · Tattoo Studio",
+    description: "A tattoo studio focused on custom tattoo work and distinctive styles. The website showcases the artist's work, studio identity, tattoo styles and booking experience.",
     category: "Studio & Booking",
     techStack: ["React", "Tailwind CSS", "Framer Motion", "Vite"],
     features: [
@@ -32,26 +34,11 @@ export const projects = [
     accentColor: "#EC4899"
   },
   {
-    id: "lily-portfolio",
-    title: "Lily Portfolio",
-    description: "A clean, modern personal portfolio created for a designer and developer to highlight creative projects, visual work, and professional branding.",
-    category: "Personal Portfolio",
-    techStack: ["React", "Tailwind CSS", "Framer Motion", "Vite"],
-    features: [
-      "Clean typography hierarchy and dark mode aesthetics.",
-      "Dynamic project galleries with interactive hover effects.",
-      "Contact form layout and responsive mobile design."
-    ],
-    github: "https://github.com/dipeshjaengir/Lily-Portfolio",
-    demo: "https://lily-portfolio-beta.vercel.app",
-    gradient: "from-emerald-600/30 via-teal-500/20 to-cyan-600/10",
-    accentColor: "#14B8A6"
-  },
-  {
     id: "yashita-portfolio",
     title: "Yashita Portfolio",
-    description: "A creative portfolio built for a frontend developer to display personal projects, technical skills, and digital craft through an engaging interactive interface.",
-    category: "Personal Portfolio",
+    clientMeta: "India · Textile & Visual Artist",
+    description: "A textile and visual artist working across murals, canvas paintings and custom artwork. Her portfolio brings together her artwork, creative journey, services and artistic projects.",
+    category: "Portfolios",
     techStack: ["React", "Tailwind CSS", "Framer Motion", "JavaScript"],
     features: [
       "Fluid section transitions with responsive mobile drawer navigation.",
@@ -64,9 +51,27 @@ export const projects = [
     accentColor: "#6366F1"
   },
   {
+    id: "lily-portfolio",
+    title: "Lily Portfolio",
+    clientMeta: "Santa Cruz, USA · Painting Artist",
+    description: "A painting artist creating expressive artwork through her unique artistic style. Her portfolio showcases her paintings, creative work and artistic identity through a visual-focused online experience.",
+    category: "Portfolios",
+    techStack: ["React", "Tailwind CSS", "Framer Motion", "Vite"],
+    features: [
+      "Clean typography hierarchy and dark mode aesthetics.",
+      "Dynamic project galleries with interactive hover effects.",
+      "Contact form layout and responsive mobile design."
+    ],
+    github: "https://github.com/dipeshjaengir/Lily-Portfolio",
+    demo: "https://lily-portfolio-beta.vercel.app",
+    gradient: "from-emerald-600/30 via-teal-500/20 to-cyan-600/10",
+    accentColor: "#14B8A6"
+  },
+  {
     id: "be-boss",
     title: "Be-Boss",
-    description: "A streamlined business management platform engineered to assist entrepreneurs with operational workflows, productivity tracking, and administrative control.",
+    clientMeta: "Brand / Business",
+    description: "A professional digital presence created for Be-Boss, designed to present the brand, its offerings and overall identity through a modern and engaging website.",
     category: "Web Application",
     techStack: ["React", "TypeScript", "Tailwind CSS", "Vite"],
     features: [
@@ -82,8 +87,9 @@ export const projects = [
   {
     id: "khushi-portfolio",
     title: "Khushi Portfolio",
-    description: "A vibrant personal portfolio built for a web developer to showcase frontend engineering work, interactive applications, and developer expertise.",
-    category: "Personal Portfolio",
+    clientMeta: "Artist Portfolio",
+    description: "A creative portfolio built to showcase Khushi's artwork, projects and artistic identity through a dedicated visual gallery and polished online presence.",
+    category: "Portfolios",
     techStack: ["React", "Tailwind CSS", "Framer Motion", "JavaScript"],
     features: [
       "Modern glassmorphic cards and dark themed visual design.",
@@ -98,7 +104,8 @@ export const projects = [
   {
     id: "shree-g-mart",
     title: "Shree G Mart",
-    description: "A full-stack online retail store designed for local retail businesses to manage inventories, customer orders, digital payments, and sales analytics.",
+    clientMeta: "E-Commerce Retail",
+    description: "An online retail store built for local retail businesses to manage inventories, customer orders, digital payments, and sales analytics.",
     category: "Full-Stack E-Commerce",
     techStack: ["React", "Node.js", "Express", "MongoDB", "Redux Toolkit", "Tailwind CSS"],
     features: [
@@ -115,7 +122,8 @@ export const projects = [
   {
     id: "smart-recruitment-portal",
     title: "Smart Recruitment Portal",
-    description: "An enterprise hiring web application built for recruitment teams to streamline candidate pipelines, schedule candidate interviews, and evaluate applicants.",
+    clientMeta: "AI-Powered Hiring",
+    description: "An AI-driven recruitment platform designed to simplify hiring for recruiters and candidates, with job listings, applications, authentication and resume-processing workflows.",
     category: "Enterprise Web App",
     techStack: ["React", "Node.js", "Express", "MongoDB", "JWT Auth", "Tailwind CSS"],
     features: [
@@ -132,7 +140,8 @@ export const projects = [
   {
     id: "gym-management-saas",
     title: "Gym Management SaaS",
-    description: "A subscription SaaS application developed for fitness centers and gym owners to manage member subscriptions, workout sessions, and financial reports.",
+    clientMeta: "Fitness Businesses",
+    description: "A multi-tenant platform built to help gyms manage members, attendance, subscriptions, billing and everyday operations from one centralized system.",
     category: "SaaS Platform",
     techStack: ["React", "TypeScript", "Framer Motion", "Tailwind CSS", "Chart.js"],
     features: [
