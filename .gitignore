@@ -13,7 +13,12 @@ dist-ssr
 *.local
 .env
 .env.*
+!.env.example
 .env.local
+
+# Runtime data files
+data/*.json
+!data/.gitkeep
 
 # Editor directories and files
 .vscode/*
