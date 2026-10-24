@@ -47,10 +47,10 @@ export const WhyWorkWithMe = () => {
               <motion.div
                 key={index}
                 className="glass-card p-8 rounded-2xl flex flex-col items-start text-left relative overflow-hidden group"
-                initial={{ opacity: 0, y: 35 }}
+                initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6, delay: index * 0.1, cubicBezier: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true, margin: "-30px" }}
+                transition={{ duration: 0.5, delay: index * 0.08, cubicBezier: [0.16, 1, 0.3, 1] }}
               >
                 {/* Visual hover background subtle gradient glow */}
                 <div className="absolute top-0 right-0 w-24 h-24 bg-electric-blue/5 rounded-full blur-xl group-hover:bg-electric-blue/10 transition-colors duration-500 pointer-events-none" />

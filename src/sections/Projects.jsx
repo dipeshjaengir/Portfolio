@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { projects } from "../data/projects";
 import { ProjectCard } from "../components/ProjectCard";
@@ -8,14 +8,16 @@ const filterOptions = ["All", "Portfolios", "Full-Stack & Apps", "SaaS & Studio"
 export const Projects = () => {
   const [filter, setFilter] = useState("All");
 
-  const filteredProjects = projects.filter((project) => {
-    const cat = project.category.toLowerCase();
-    if (filter === "All") return true;
-    if (filter === "Portfolios") return cat.includes("portfolio");
-    if (filter === "Full-Stack & Apps") return cat.includes("full-stack") || cat.includes("enterprise") || cat.includes("application");
-    if (filter === "SaaS & Studio") return cat.includes("saas") || cat.includes("studio") || cat.includes("booking");
-    return true;
-  });
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      const cat = project.category.toLowerCase();
+      if (filter === "All") return true;
+      if (filter === "Portfolios") return cat.includes("portfolio");
+      if (filter === "Full-Stack & Apps") return cat.includes("full-stack") || cat.includes("enterprise") || cat.includes("application");
+      if (filter === "SaaS & Studio") return cat.includes("saas") || cat.includes("studio") || cat.includes("booking");
+      return true;
+    });
+  }, [filter]);
 
   return (
     <section id="projects" className="relative py-24 border-t border-zinc-900 bg-matte-black/25">
@@ -33,12 +35,12 @@ export const Projects = () => {
           </div>
 
           {/* Dynamic Filter Pill Options */}
-          <div className="flex flex-wrap gap-2 bg-zinc-900/40 border border-zinc-800/40 p-1.5 rounded-xl backdrop-blur-md">
+          <div className="flex flex-wrap gap-2 bg-zinc-900/40 border border-zinc-800/40 p-1.5 rounded-xl backdrop-blur-sm">
             {filterOptions.map((opt) => (
               <button
                 key={opt}
                 onClick={() => setFilter(opt)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-sans tracking-wide uppercase transition-all duration-300 cursor-pointer ${
+                className={`px-4 py-1.5 rounded-lg text-xs font-sans tracking-wide uppercase transition-colors duration-200 cursor-pointer ${
                   filter === opt
                     ? "bg-electric-blue text-white font-medium"
                     : "text-zinc-500 hover:text-white"
@@ -51,25 +53,22 @@ export const Projects = () => {
         </div>
 
         {/* Grid Layout */}
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          layout
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredProjects.map((project) => (
               <motion.div
                 key={project.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
               >
                 <ProjectCard project={project} />
               </motion.div>
             ))}
           </AnimatePresence>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

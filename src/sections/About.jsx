@@ -22,10 +22,10 @@ export const About = () => {
           {/* Left Block: Narrative */}
           <motion.div 
             className="lg:col-span-7 flex flex-col justify-between space-y-6"
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: "-30px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="space-y-6 text-zinc-400 font-sans text-sm md:text-base font-light leading-relaxed">
               <p>
@@ -59,10 +59,10 @@ export const About = () => {
           {/* Right Block: Interactive Cards & Location Widgets */}
           <motion.div 
             className="lg:col-span-5 flex flex-col justify-between gap-6"
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: "-30px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Academic Card */}
             <div className="glass-card p-6 rounded-2xl flex items-start space-x-4">

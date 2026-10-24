@@ -125,8 +125,12 @@ export const Hero = () => {
                 <img
                   src={profileImg}
                   alt="Dipesh Jangir Profile"
+                  width="320"
+                  height="320"
+                  fetchPriority="high"
+                  decoding="async"
                   onError={() => setImgLoadError(true)}
-                  className="w-full h-full object-cover object-center rounded-xl group-hover:scale-105 transition-transform duration-700 ease-out"
+                  className="w-full h-full object-cover object-center rounded-xl group-hover:scale-105 transition-transform duration-500 ease-out"
                   loading="eager"
                 />
               ) : (

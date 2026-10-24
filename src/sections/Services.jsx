@@ -48,10 +48,10 @@ export const Services = () => {
               <motion.div
                 key={item.title}
                 className="glass-card p-8 rounded-2xl flex flex-col md:flex-row items-start text-left gap-6 group"
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6, delay: index * 0.1, cubicBezier: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true, margin: "-30px" }}
+                transition={{ duration: 0.5, delay: index * 0.08, cubicBezier: [0.16, 1, 0.3, 1] }}
               >
                 {/* Icon wrapper */}
                 <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-electric-blue flex-shrink-0 group-hover:scale-105 group-hover:border-electric-blue/30 transition-all duration-300">

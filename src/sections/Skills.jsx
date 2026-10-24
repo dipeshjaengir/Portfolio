@@ -51,10 +51,10 @@ export const Skills = () => {
             <motion.div
               key={category.id}
               className="glass-card p-8 rounded-2xl flex flex-col justify-between text-left relative overflow-hidden group"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 25 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6, delay: index * 0.1, cubicBezier: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{ duration: 0.5, delay: index * 0.08, cubicBezier: [0.16, 1, 0.3, 1] }}
             >
               <div>
                 {/* Title & Description */}

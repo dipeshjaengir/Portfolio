@@ -10,7 +10,7 @@
   --color-neutral-border: #2A2A2A;
   
   --animate-float: float 6s ease-in-out infinite;
-  --animate-pulse-glow: pulse-glow 3s infinite;
+  --animate-pulse-glow: pulse-glow 4s ease-in-out infinite;
   --animate-gradient-shift: gradient-shift 15s ease infinite;
 
   @keyframes float {
@@ -18,8 +18,8 @@
     50% { transform: translateY(-10px); }
   }
   @keyframes pulse-glow {
-    0%, 100% { opacity: 0.15; filter: blur(80px); }
-    50% { opacity: 0.35; filter: blur(100px); }
+    0%, 100% { opacity: 0.15; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(1.04); }
   }
   @keyframes gradient-shift {
     0%, 100% { background-position: 0% 50%; }
@@ -63,6 +63,7 @@ body {
 .glass-panel {
   background: rgba(18, 18, 18, 0.6);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
@@ -74,15 +75,51 @@ body {
 .glass-card {
   background: rgba(26, 26, 26, 0.45);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.03);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
   border-color: rgba(59, 130, 246, 0.3);
   box-shadow: 0 10px 40px rgba(59, 130, 246, 0.05);
   transform: translateY(-4px);
+}
+
+/* Mobile-Specific Hardware Optimizations: lighter blur and shadows for 60fps scrolling */
+@media (max-width: 768px) {
+  .glass-panel {
+    background: rgba(18, 18, 18, 0.88);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .glass-card {
+    background: rgba(24, 24, 24, 0.85);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .glass-card:hover {
+    transform: none;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .text-gradient {

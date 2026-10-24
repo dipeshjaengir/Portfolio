@@ -23,10 +23,10 @@ export const DevProcess = () => {
             <motion.div
               key={item.step}
               className="bg-zinc-950/40 border border-zinc-900 rounded-2xl p-8 text-left relative overflow-hidden group shadow-2xl hover:border-zinc-800 transition-all duration-300"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 25 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6, delay: index * 0.1, cubicBezier: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{ duration: 0.5, delay: index * 0.08, cubicBezier: [0.16, 1, 0.3, 1] }}
             >
               {/* Step indicator on card corner */}
               <div className="absolute top-6 right-6 font-display font-black text-2xl md:text-3xl text-zinc-800/40 group-hover:text-electric-blue/20 transition-colors duration-500">

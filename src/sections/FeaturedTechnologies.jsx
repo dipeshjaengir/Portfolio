@@ -59,10 +59,10 @@ export const FeaturedTechnologies = () => {
               <motion.div
                 key={item.name}
                 className="bg-zinc-950/60 border border-zinc-900 rounded-2xl p-6 text-left relative overflow-hidden group shadow-xl hover:border-zinc-800 transition-all duration-300"
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true, margin: "-30px" }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
               >
                 {/* Glow Radial Mask */}
                 <div 

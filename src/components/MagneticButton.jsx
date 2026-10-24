@@ -1,9 +1,21 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 export const MagneticButton = ({ children, range = 40, className = "" }) => {
   const ref = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) {
+      setIsTouchDevice(true);
+    }
+  }, []);
+
+  // On touch/mobile devices, disable magnetic calculations completely to preserve 60fps scrolling
+  if (isTouchDevice) {
+    return <div className={`inline-block ${className}`}>{children}</div>;
+  }
 
   const handleMouseMove = (e) => {
     if (!ref.current) return;
@@ -19,7 +31,6 @@ export const MagneticButton = ({ children, range = 40, className = "" }) => {
     // Check if within magnetic range
     const distance = Math.sqrt(x * x + y * y);
     if (distance < range) {
-      // Pull element towards mouse (attenuated by factor of 0.35)
       setPosition({ x: x * 0.35, y: y * 0.35 });
     } else {
       setPosition({ x: 0, y: 0 });
