@@ -5,9 +5,9 @@ export const SpinWheel = React.memo(({ onSpin, onAnimationComplete, disabled, is
   const [rotation, setRotation] = useState(0);
   const wheelRef = useRef(null);
   const animationTimerRef = useRef(null);
-  const segments = CAMPAIGN_CONFIG.outcomes; // Exactly 8 segments
-  const numSegments = segments.length; // 8
-  const segmentAngle = 360 / numSegments; // 45 degrees
+  const segments = CAMPAIGN_CONFIG.outcomes; // 9 segments including 100% OFF (FREE)
+  const numSegments = segments.length; // 9
+  const segmentAngle = 360 / numSegments; // 40 degrees
 
   // Clean up any in-flight timers on unmount
   useEffect(() => {
@@ -160,7 +160,7 @@ export const SpinWheel = React.memo(({ onSpin, onAnimationComplete, disabled, is
               );
             })}
 
-            {/* 8 Wheel Segments */}
+            {/* 9 Wheel Segments */}
             {segments.map((seg, i) => {
               const midAngleDeg = i * segmentAngle;
               const textAngleRad = (midAngleDeg - 90) * (Math.PI / 180);
@@ -181,12 +181,12 @@ export const SpinWheel = React.memo(({ onSpin, onAnimationComplete, disabled, is
                     strokeOpacity="0.6"
                   />
 
-                  {/* Segment Content: Line 1 ($XXX) & Line 2 (OFF) */}
+                  {/* Segment Content: Line 1 ($XXX / FREE) & Line 2 (OFF / 100% OFF) */}
                   <text
                     x={tx}
                     y={ty - 6}
                     fill="#FFFFFF"
-                    fontSize="18"
+                    fontSize={seg.isFree ? '16' : '18'}
                     fontWeight="900"
                     fontFamily="Space Grotesk, sans-serif"
                     textAnchor="middle"
@@ -199,16 +199,16 @@ export const SpinWheel = React.memo(({ onSpin, onAnimationComplete, disabled, is
                   <text
                     x={tx}
                     y={ty + 11}
-                    fill={isElectricBlue ? '#BAE6FD' : '#94A3B8'}
-                    fontSize="11"
+                    fill={seg.isFree ? '#BAE6FD' : isElectricBlue ? '#BAE6FD' : '#94A3B8'}
+                    fontSize={seg.isFree ? '10' : '11'}
                     fontWeight="800"
                     fontFamily="monospace"
                     textAnchor="middle"
                     dominantBaseline="central"
                     transform={`rotate(${midAngleDeg}, ${tx}, ${ty})`}
-                    style={{ letterSpacing: '1px' }}
+                    style={{ letterSpacing: seg.isFree ? '0.5px' : '1px' }}
                   >
-                    OFF
+                    {seg.subLabel || 'OFF'}
                   </text>
                 </g>
               );

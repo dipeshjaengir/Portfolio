@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, Check, X, Info } from 'lucide-react';
+import { ChevronDown, Check, X, Info, Sparkles } from 'lucide-react';
 import { CAMPAIGN_CONFIG } from '../../data/campaignConfig';
 
 export const PackageScopeDetails = () => {
@@ -22,9 +22,21 @@ export const PackageScopeDetails = () => {
 
       {isOpen && (
         <div className="px-4 pb-4 pt-1 space-y-3 text-xs border-t border-blue-500/20 font-sans">
+          {scope.freePrizeScope && (
+            <div className="p-2.5 bg-blue-950/60 border border-sky-400/40 rounded-xl space-y-1">
+              <h5 className="font-semibold font-mono text-[11px] uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-sky-300" />
+                <span>{scope.freePrizeScope.title}</span>
+              </h5>
+              <p className="text-zinc-300 text-[11px] leading-relaxed">
+                {scope.freePrizeScope.description}
+              </p>
+            </div>
+          )}
+
           <div>
             <h5 className="font-semibold mb-1.5 font-mono text-[11px] uppercase tracking-wider text-sky-300">
-              What Is Included:
+              What Is Included (Standard Package):
             </h5>
             <ul className="space-y-1 text-zinc-300 text-[11px]">
               {scope.included.map((item, idx) => (

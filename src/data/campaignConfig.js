@@ -1,5 +1,5 @@
 // Frontend configuration matching server/campaignConfig.js
-// Matches exact reference image: 8-segment wheel with discount amounts
+// Matches exact reference image: 9-segment wheel with discount amounts + 100% OFF (FREE)
 export const CAMPAIGN_CONFIG = {
   name: 'BIRTHDAY SALE',
   timezone: 'Asia/Kolkata',
@@ -12,16 +12,17 @@ export const CAMPAIGN_CONFIG = {
   inquiryEmail: 'dipeshjangir12@gmail.com',
   instagramUrl: 'https://www.instagram.com/_dipesh2.0/',
 
-  // Exact 8-segment wheel configuration matching reference image & probability table:
-  // Segment 1: $200 OFF (25%) -> Final Price $100 (Highest probability outcome)
-  // Segment 2: $180 OFF (20%) -> Final Price $120
-  // Segment 3: $150 OFF (18%) -> Final Price $150
-  // Segment 4: $100 OFF (17%) -> Final Price $200
-  // Segment 5: $80 OFF (8%)   -> Final Price $220
-  // Segment 6: $50 OFF (5%)   -> Final Price $250
-  // Segment 7: $30 OFF (4%)   -> Final Price $270
-  // Segment 8: $100 OFF (3%)  -> Final Price $200
-  // Total Probability = 100%
+  // 9-segment wheel configuration:
+  // Segment 1: $200 OFF (24.975%) -> Final Price $100
+  // Segment 2: $180 OFF (19.980%) -> Final Price $120
+  // Segment 3: $150 OFF (17.982%) -> Final Price $150
+  // Segment 4: $100 OFF (16.983%) -> Final Price $200
+  // Segment 5: $80 OFF  (7.992%)  -> Final Price $220
+  // Segment 6: $50 OFF  (4.995%)  -> Final Price $250
+  // Segment 7: $30 OFF  (3.996%)  -> Final Price $270
+  // Segment 8: $100 OFF (2.997%)  -> Final Price $200
+  // Segment 9: 100% OFF (0.100%)  -> Final Price $0 (FREE Basic Portfolio package)
+  // Total Probability = 100.000%
   outcomes: [
     {
       id: 'disc_200',
@@ -30,7 +31,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$200 OFF',
       shortLabel: '$200',
       finalPrice: 100,
-      probability: 0.25,
+      probability: 0.24975,
       color: '#1D75F2', // Electric Blue slice
       textColor: '#FFFFFF',
       description: '$200 discount applied to standard $300 package'
@@ -42,7 +43,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$180 OFF',
       shortLabel: '$180',
       finalPrice: 120,
-      probability: 0.20,
+      probability: 0.1998,
       color: '#081226', // Deep Navy slice
       textColor: '#FFFFFF',
       description: '$180 discount applied to standard $300 package'
@@ -54,7 +55,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$150 OFF',
       shortLabel: '$150',
       finalPrice: 150,
-      probability: 0.18,
+      probability: 0.17982,
       color: '#1D75F2', // Electric Blue slice
       textColor: '#FFFFFF',
       description: '$150 discount applied to standard $300 package'
@@ -66,7 +67,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$100 OFF',
       shortLabel: '$100',
       finalPrice: 200,
-      probability: 0.17,
+      probability: 0.16983,
       color: '#081226', // Deep Navy slice
       textColor: '#FFFFFF',
       description: '$100 discount applied to standard $300 package'
@@ -78,7 +79,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$80 OFF',
       shortLabel: '$80',
       finalPrice: 220,
-      probability: 0.08,
+      probability: 0.07992,
       color: '#1D75F2', // Electric Blue slice
       textColor: '#FFFFFF',
       description: '$80 discount applied to standard $300 package'
@@ -90,7 +91,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$50 OFF',
       shortLabel: '$50',
       finalPrice: 250,
-      probability: 0.05,
+      probability: 0.04995,
       color: '#081226', // Deep Navy slice
       textColor: '#FFFFFF',
       description: '$50 discount applied to standard $300 package'
@@ -102,7 +103,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$30 OFF',
       shortLabel: '$30',
       finalPrice: 270,
-      probability: 0.04,
+      probability: 0.03996,
       color: '#1D75F2', // Electric Blue slice
       textColor: '#FFFFFF',
       description: '$30 discount applied to standard $300 package'
@@ -114,10 +115,24 @@ export const CAMPAIGN_CONFIG = {
       label: '$100 OFF',
       shortLabel: '$100',
       finalPrice: 200,
-      probability: 0.03,
+      probability: 0.02997,
       color: '#081226', // Deep Navy slice
       textColor: '#FFFFFF',
       description: '$100 discount applied to standard $300 package (Segment 8)'
+    },
+    {
+      id: 'disc_free',
+      segmentNumber: 9,
+      discount: 300,
+      label: '100% OFF (FREE)',
+      shortLabel: 'FREE',
+      subLabel: '100% OFF',
+      finalPrice: 0,
+      isFree: true,
+      probability: 0.001,
+      color: '#0284C7', // Distinctive electric cyan-blue slice
+      textColor: '#FFFFFF',
+      description: '100% OFF Basic Portfolio Website package ($300 value)'
     }
   ],
 
@@ -135,6 +150,10 @@ export const CAMPAIGN_CONFIG = {
       'Custom Domain registration fees (paid directly to registrar)',
       'Third-party paid API subscriptions or premium SaaS keys',
       'Complex multi-tier backend architectures or external databases outside standard scope'
-    ]
+    ],
+    freePrizeScope: {
+      title: '100% OFF (FREE) Basic Portfolio Package Scope',
+      description: 'The 100% OFF prize covers a complete, production-ready Basic Portfolio Website (single-page / 3 core sections: Hero introduction, Projects showcase, Contact/social links) completely free ($0 final price against the standard $300 package price, with $300 savings). It covers responsive design and deployment assistance. Additional multi-page expansions, backend databases, or third-party paid subscriptions are not included.'
+    }
   }
 };

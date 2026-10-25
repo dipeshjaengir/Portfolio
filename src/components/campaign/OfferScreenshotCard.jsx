@@ -77,12 +77,13 @@ export const OfferScreenshotCard = ({ offer, formatExpiryIST }) => {
     ctx.fillText('EXCLUSIVE BIRTHDAY DISCOUNT UNLOCKED:', 50, 135);
 
     // Prize Title
-    const discountVal = offer.discount || offer.savings || 200;
-    const finalPriceVal = offer.finalPrice || (300 - discountVal);
-    const prizeText = `$${discountVal} OFF WEBSITE DEVELOPMENT`;
+    const isFree = Boolean(offer.isFree || offer.finalPrice === 0 || offer.discount === 300);
+    const discountVal = offer.discount ?? offer.savings ?? 200;
+    const finalPriceVal = offer.finalPrice !== undefined ? offer.finalPrice : (300 - discountVal);
+    const prizeText = isFree ? '100% OFF (FREE BASIC PORTFOLIO)' : `$${discountVal} OFF WEBSITE DEVELOPMENT`;
 
     ctx.fillStyle = '#38BDF8';
-    ctx.font = 'bold 34px sans-serif';
+    ctx.font = isFree ? 'bold 28px sans-serif' : 'bold 34px sans-serif';
     ctx.fillText(prizeText, 50, 180);
 
     // Standard Price & Final Price
@@ -92,7 +93,19 @@ export const OfferScreenshotCard = ({ offer, formatExpiryIST }) => {
 
     ctx.fillStyle = '#38BDF8';
     ctx.font = 'bold 18px monospace';
-    ctx.fillText(`Your Final Development Price: $${finalPriceVal} (Save $${discountVal})`, 50, 248);
+    ctx.fillText(
+      isFree
+        ? `Your Final Price: $0 (Save $300 — Basic Portfolio)`
+        : `Your Final Development Price: $${finalPriceVal} (Save $${discountVal})`,
+      50,
+      248
+    );
+
+    if (isFree) {
+      ctx.fillStyle = '#BAE6FD';
+      ctx.font = 'italic 11px sans-serif';
+      ctx.fillText('* Limited-scope Basic Portfolio Website package (Single-page / 3 core sections)', 50, 268);
+    }
 
     // Divider Line
     ctx.strokeStyle = 'rgba(0, 140, 255, 0.35)';
@@ -162,7 +175,9 @@ export const OfferScreenshotCard = ({ offer, formatExpiryIST }) => {
 
       await navigator.share({
         title: "Dipesh's Birthday Sale Voucher",
-        text: `I just unlocked a $${offer.discount || offer.savings} OFF website development deal on Dipesh Jangir's Birthday Sale!`,
+        text: isFree
+          ? "I just unlocked a 100% OFF (FREE) Basic Portfolio Website on Dipesh Jangir's Birthday Sale!"
+          : `I just unlocked a $${discountVal} OFF website development deal on Dipesh Jangir's Birthday Sale!`,
         files: [file]
       });
     } catch {

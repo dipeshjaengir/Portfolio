@@ -122,11 +122,12 @@ export async function processSpin(visitorId, forcedTimestamp = null) {
     outcomeIndex,
     segmentNumber: outcome.segmentNumber,
     prizeId: outcome.id,
-    prizeLabel: outcome.label, // e.g. "$200 OFF"
+    prizeLabel: outcome.label, // e.g. "$200 OFF" or "100% OFF (FREE)"
     discount: outcome.discount,
     finalPrice: outcome.finalPrice,
     standardPrice: CAMPAIGN_CONFIG.standardPrice,
     savings: outcome.discount,
+    isFree: Boolean(outcome.isFree),
     issuedAt: issuedDate.toISOString(),
     expiresAt: expiryDate.toISOString(),
     claimed: false,
@@ -157,6 +158,7 @@ async function sendInquiryEmail(offer, inquiryData) {
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
+  const isFree = Boolean(offer.isFree || offer.finalPrice === 0 || offer.discount === 300);
   const subject = `Birthday Sale Website Inquiry — ${offer.prizeLabel}`;
   const plainText = `
 Hi Dipesh,
@@ -177,8 +179,8 @@ OFFER DETAILS
 Offer ID: ${offer.offerId}
 Selected Offer: ${offer.prizeLabel}
 Standard Price: $${offer.standardPrice}
-Discount: $${offer.discount || offer.savings} OFF
-Final Price: $${offer.finalPrice || (offer.standardPrice - (offer.discount || offer.savings))}
+Discount: ${isFree ? '100% OFF ($300 Savings)' : `$${offer.discount || offer.savings} OFF`}
+Final Price: $${offer.finalPrice !== undefined ? offer.finalPrice : (offer.standardPrice - (offer.discount || offer.savings))}${isFree ? ' (FREE Basic Portfolio Package)' : ''}
 Client Savings: $${offer.discount || offer.savings}
 Issued At: ${new Date(offer.issuedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST
 Valid Until: ${new Date(offer.expiresAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST

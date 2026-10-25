@@ -90,9 +90,12 @@ export const BirthdaySaleModal = ({ campaign }) => {
   // Generate mailto: link for reliable email fallback to dipeshjangir12@gmail.com
   const generateMailtoLink = () => {
     const recipient = CAMPAIGN_CONFIG?.inquiryEmail || 'dipeshjangir12@gmail.com';
-    const discountVal = offer?.discount || offer?.savings || 200;
-    const finalPriceVal = offer?.finalPrice || (300 - discountVal);
-    const subject = `Birthday Sale Website Inquiry — $${discountVal} OFF (${offer?.offerId || ''})`;
+    const isFree = Boolean(offer?.isFree || offer?.finalPrice === 0 || offer?.discount === 300);
+    const discountVal = offer?.discount ?? offer?.savings ?? 200;
+    const finalPriceVal = offer?.finalPrice !== undefined ? offer.finalPrice : (300 - discountVal);
+    const subject = isFree
+      ? `Birthday Sale Website Inquiry — 100% OFF (FREE Basic Portfolio) (${offer?.offerId || ''})`
+      : `Birthday Sale Website Inquiry — $${discountVal} OFF (${offer?.offerId || ''})`;
 
     const body = `Hi Dipesh,
 
@@ -105,9 +108,9 @@ CLIENT DETAILS:
 
 OFFER DETAILS:
 - Offer ID: ${offer?.offerId || 'N/A'}
-- Unlocked Discount: $${discountVal} OFF
+- Unlocked Discount: ${isFree ? '100% OFF (FREE Basic Portfolio)' : `$${discountVal} OFF`}
 - Standard Package: $300
-- Final Development Price: $${finalPriceVal}
+- Final Development Price: $${finalPriceVal}${isFree ? ' (FREE Basic Portfolio)' : ''}
 - Client Savings: $${discountVal}
 - Valid Until: ${formatExpiryIST(offer?.expiresAt)}
 
@@ -218,29 +221,36 @@ Looking forward to hearing from you!`;
 
                 {/* Subtitle */}
                 <p className="text-zinc-300 font-sans text-xs sm:text-sm font-normal leading-relaxed max-w-sm">
-                  Spin to unlock a <strong className="text-sky-400 font-semibold">special price</strong> on your next website.
+                  Spin the wheel to unlock an <strong className="text-sky-400 font-semibold">exclusive deal</strong> on your next website.
                 </p>
 
-                {/* Price Panel (Rounded card matching reference) */}
-                <div className="w-full py-3.5 px-4 bg-gradient-to-b from-blue-950/40 to-[#071126]/60 border border-blue-500/35 rounded-2xl space-y-1.5 shadow-[0_4px_20px_rgba(0,140,255,0.12)]">
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="font-mono text-xs font-bold text-sky-300/80 tracking-widest uppercase">
-                      STANDARD PRICE
-                    </span>
-                    <span className="font-display font-bold text-base text-zinc-400 line-through decoration-zinc-500 decoration-2">
-                      $300
-                    </span>
+                {/* Promotional Price Panel — Matches Reference Design */}
+                <div className="w-full py-4 px-4 sm:px-6 bg-gradient-to-b from-blue-950/50 to-[#071126]/75 border border-blue-500/40 rounded-2xl shadow-[0_4px_25px_rgba(0,140,255,0.18)]">
+                  <div className="grid grid-cols-2 divide-x divide-blue-500/25 items-center text-center">
+                    {/* Left Column: UP TO 100% OFF */}
+                    <div className="flex flex-col items-center justify-center px-2 py-1">
+                      <span className="font-mono text-[11px] sm:text-xs font-bold text-sky-300/80 tracking-widest uppercase">
+                        UP TO
+                      </span>
+                      <span className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-sky-400 tracking-tight drop-shadow-[0_0_18px_rgba(56,189,248,0.7)] mt-0.5">
+                        100% OFF
+                      </span>
+                    </div>
+
+                    {/* Right Column: STANDARD PRICE $300 */}
+                    <div className="flex flex-col items-center justify-center px-2 py-1">
+                      <span className="font-mono text-[11px] sm:text-xs font-bold text-zinc-400 tracking-widest uppercase">
+                        STANDARD PRICE
+                      </span>
+                      <span className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-zinc-400 line-through decoration-zinc-500 decoration-2 mt-0.5">
+                        $300
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-1 text-sm text-zinc-200">
-                    <span>Your final price could be as low as</span>
-                    <span className="font-display font-black text-2xl sm:text-3xl text-sky-400 tracking-tight drop-shadow-[0_0_12px_rgba(56,189,248,0.6)]">
-                      $100
-                    </span>
-                  </div>
-
-                  <p className="text-[10px] font-sans text-zinc-400 pt-0.5">
-                    Standard package value $300. Max savings $200 OFF. Terms & package scope apply.
+                  {/* Supporting Text */}
+                  <p className="text-[11px] sm:text-xs font-sans text-zinc-300 text-center pt-2.5 border-t border-blue-500/20 mt-3">
+                    Your next website, at a <span className="text-sky-400 font-medium">special birthday price</span>.
                   </p>
                 </div>
 
@@ -370,12 +380,23 @@ Looking forward to hearing from you!`;
 
                 <div className="space-y-1">
                   <h3 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white uppercase leading-tight">
-                    YOU UNLOCKED <span className="text-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.6)]">${offer.discount || offer.savings} OFF!</span>
+                    YOU UNLOCKED{' '}
+                    <span className="text-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.6)]">
+                      {(offer.isFree || offer.finalPrice === 0) ? '100% OFF (FREE)!' : `$${offer.discount || offer.savings} OFF!`}
+                    </span>
                   </h3>
                   <p className="font-display text-sm sm:text-base font-bold text-sky-300 tracking-wide">
-                    Final Website Price: ${offer.finalPrice || (300 - (offer.discount || offer.savings))}
+                    Final Website Price: ${offer.finalPrice !== undefined ? offer.finalPrice : (300 - (offer.discount || offer.savings))}
+                    {(offer.isFree || offer.finalPrice === 0) && ' (Save $300)'}
                   </p>
                 </div>
+
+                {/* 100% OFF Grand Prize Scope Notice */}
+                {(offer.isFree || offer.finalPrice === 0) && (
+                  <div className="w-full p-2.5 bg-blue-950/60 border border-sky-400/40 rounded-xl text-xs text-sky-200 font-sans text-center">
+                    🎉 <strong>100% OFF Grand Prize:</strong> Covers the full cost ($300 value) of our limited-scope <strong>Basic Portfolio Website package</strong> at <strong>$0</strong>!
+                  </div>
+                )}
 
                 {/* 3-Column Offer Summary Panel */}
                 <OfferSummaryPanel offer={offer} standardPrice={CAMPAIGN_CONFIG.standardPrice} />
@@ -462,7 +483,11 @@ Looking forward to hearing from you!`;
                     disabled={claimLoading}
                     className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-700 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-400 hover:to-cyan-300 text-white font-display font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl shadow-[0_0_25px_rgba(0,140,255,0.45)] cursor-pointer transition-all disabled:opacity-50 disabled:cursor-wait"
                   >
-                    {claimLoading ? 'SUBMITTING INQUIRY...' : `CLAIM DEAL FOR $${offer.finalPrice || (300 - (offer.discount || offer.savings))}`}
+                    {claimLoading
+                      ? 'SUBMITTING INQUIRY...'
+                      : (offer.isFree || offer.finalPrice === 0)
+                      ? 'CLAIM FREE BASIC PORTFOLIO ($0)'
+                      : `CLAIM DEAL FOR $${offer.finalPrice !== undefined ? offer.finalPrice : (300 - (offer.discount || offer.savings))}`}
                   </button>
 
                   {/* Mailto Fallback */}
@@ -525,12 +550,23 @@ Looking forward to hearing from you!`;
 
                 <div className="space-y-1">
                   <h3 className="font-display text-2xl font-black text-white uppercase">
-                    YOU UNLOCKED <span className="text-sky-400">${offer.discount || offer.savings} OFF!</span>
+                    YOU UNLOCKED{' '}
+                    <span className="text-sky-400">
+                      {(offer.isFree || offer.finalPrice === 0) ? '100% OFF (FREE)!' : `$${offer.discount || offer.savings} OFF!`}
+                    </span>
                   </h3>
                   <p className="font-display text-sm font-bold text-sky-300">
-                    Final Website Price: ${offer.finalPrice || (300 - (offer.discount || offer.savings))}
+                    Final Website Price: ${offer.finalPrice !== undefined ? offer.finalPrice : (300 - (offer.discount || offer.savings))}
+                    {(offer.isFree || offer.finalPrice === 0) && ' (Save $300)'}
                   </p>
                 </div>
+
+                {/* 100% OFF Grand Prize Scope Notice */}
+                {(offer.isFree || offer.finalPrice === 0) && (
+                  <div className="w-full p-2.5 bg-blue-950/60 border border-sky-400/40 rounded-xl text-xs text-sky-200 font-sans text-center">
+                    🎉 <strong>100% OFF Grand Prize:</strong> Covers the full cost ($300 value) of our limited-scope <strong>Basic Portfolio Website package</strong> at <strong>$0</strong>!
+                  </div>
+                )}
 
                 {/* 3-Column Offer Summary Panel */}
                 <OfferSummaryPanel offer={offer} standardPrice={CAMPAIGN_CONFIG.standardPrice} />
@@ -558,7 +594,11 @@ Looking forward to hearing from you!`;
                     onClick={() => setModalView('CLAIM')}
                     className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-700 via-sky-500 to-cyan-400 text-white font-display font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl shadow-[0_0_25px_rgba(0,140,255,0.4)] cursor-pointer"
                   >
-                    Proceed to Claim Form (${offer.finalPrice || (300 - (offer.discount || offer.savings))})
+                    Proceed to Claim Form (
+                    {(offer.isFree || offer.finalPrice === 0)
+                      ? 'FREE / $0'
+                      : `$${offer.finalPrice !== undefined ? offer.finalPrice : (300 - (offer.discount || offer.savings))}`}
+                    )
                   </button>
                 ) : (
                   <OfferScreenshotCard offer={offer} formatExpiryIST={formatExpiryIST} />
