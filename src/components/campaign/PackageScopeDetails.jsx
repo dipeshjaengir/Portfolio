@@ -25,7 +25,7 @@ export const PackageScopeDetails = () => {
           {scope.freePrizeScope && (
             <div className="p-2.5 bg-blue-950/60 border border-sky-400/40 rounded-xl space-y-1">
               <h5 className="font-semibold font-mono text-[11px] uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-sky-300" />
+                
                 <span>{scope.freePrizeScope.title}</span>
               </h5>
               <p className="text-zinc-300 text-[11px] leading-relaxed">

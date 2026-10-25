@@ -13,10 +13,11 @@ export const BirthdayBadge = React.memo(({ campaign }) => {
 
   const isBefore = timing?.status === 'BEFORE';
   const isActive = Boolean(timing?.active);
+  const isEnded = timing?.status === 'ENDED';
   const userHasOffer = Boolean(hasSpun || offer);
 
   // Show badge only when modal is closed
-  const shouldShow = !isModalOpen && (isBefore || isActive || userHasOffer);
+  const shouldShow = !isModalOpen && (isBefore || isActive || isEnded || userHasOffer);
 
   // Determine badge text state matching reference design specifications
   let badgeLabel = '🎂 BIRTHDAY SALE';
@@ -26,6 +27,8 @@ export const BirthdayBadge = React.memo(({ campaign }) => {
     badgeLabel = '🎂 BIRTHDAY SALE — TOMORROW';
   } else if (isActive) {
     badgeLabel = '🎂 BIRTHDAY SALE — LIVE NOW 🟢';
+  } else if (isEnded) {
+    badgeLabel = '🎂 BIRTHDAY SALE — CONCLUDED';
   }
 
   const handleClick = (e) => {

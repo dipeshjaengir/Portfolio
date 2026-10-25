@@ -14,6 +14,21 @@ function getOrGenerateVisitorId() {
 
 function calculateClientTiming() {
   const now = Date.now();
+  const isDev = Boolean(import.meta.env.DEV);
+
+  // In local development, activate immediately so testing the live wheel is frictionless
+  if (isDev) {
+    return {
+      name: CAMPAIGN_CONFIG.name,
+      active: true,
+      status: 'ACTIVE',
+      startTimestamp: now - 10000,
+      endTimestamp: now + 7 * 86400000,
+      remainingToEnd: 7 * 86400000,
+      isDevOverride: true
+    };
+  }
+
   const isActive = now >= CAMPAIGN_CONFIG.startTimestamp && now < CAMPAIGN_CONFIG.endTimestamp;
   return {
     name: CAMPAIGN_CONFIG.name,
@@ -27,6 +42,7 @@ function calculateClientTiming() {
 }
 
 export function useCampaign() {
+  const isDev = Boolean(import.meta.env.DEV);
   const [visitorId, setVisitorId] = useState('');
   const [loading, setLoading] = useState(true);
   const [timing, setTiming] = useState(calculateClientTiming);
@@ -44,13 +60,14 @@ export function useCampaign() {
   const [modalView, setModalView] = useState('PROMO');
 
   const spinLockRef = useRef(false);
-  const hasAutoOpenedRef = useRef(false);
+  const pendingOfferRef = useRef(null);
 
   // Initialize and check status with server
   const fetchStatus = useCallback(async (vid) => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/campaign/status?visitorId=${encodeURIComponent(vid)}`);
+      const queryParams = new URLSearchParams({ visitorId: vid });
+      const res = await fetch(`/api/campaign/status?${queryParams.toString()}`);
       if (!res.ok) throw new Error('Status request failed');
       const data = await res.json();
 
@@ -68,17 +85,7 @@ export function useCampaign() {
     } catch (err) {
       console.warn('Campaign status fetch fallback:', err);
       // Fallback timing calculation on client
-      const now = Date.now();
-      const isActive = now >= CAMPAIGN_CONFIG.startTimestamp && now < CAMPAIGN_CONFIG.endTimestamp;
-      setTiming({
-        name: CAMPAIGN_CONFIG.name,
-        active: isActive,
-        status: now < CAMPAIGN_CONFIG.startTimestamp ? 'BEFORE' : isActive ? 'ACTIVE' : 'ENDED',
-        startTimestamp: CAMPAIGN_CONFIG.startTimestamp,
-        endTimestamp: CAMPAIGN_CONFIG.endTimestamp,
-        remainingToStart: Math.max(0, CAMPAIGN_CONFIG.startTimestamp - now),
-        remainingToEnd: Math.max(0, CAMPAIGN_CONFIG.endTimestamp - now)
-      });
+      setTiming(calculateClientTiming());
     } finally {
       setLoading(false);
     }
@@ -109,8 +116,9 @@ export function useCampaign() {
         throw new Error(data.error || 'Failed to complete spin. Please try again.');
       }
 
-      setHasSpun(true);
-      setOffer(data.offer);
+      // Keep the discount and final price hidden in React state while the wheel rotates (>=5s)
+      // Do NOT call setOffer or setHasSpun immediately — store in pendingOfferRef
+      pendingOfferRef.current = data.offer;
 
       return {
         outcomeIndex: data.outcomeIndex,
@@ -122,12 +130,18 @@ export function useCampaign() {
       setError(err.message || 'Error occurred while spinning');
       setIsSpinning(false);
       spinLockRef.current = false;
+      pendingOfferRef.current = null;
       return null;
     }
   }, [visitorId, isSpinning]);
 
-  // Finish spin animation callback (only invoked when wheel rotation of >= 5s completes)
+  // Finish spin animation callback (invoked when wheel rotation of >= 5s settles)
   const completeSpinAnimation = useCallback(() => {
+    if (pendingOfferRef.current) {
+      setOffer(pendingOfferRef.current);
+      setHasSpun(true);
+      pendingOfferRef.current = null;
+    }
     setIsSpinning(false);
     spinLockRef.current = false;
     setModalView('REVEAL');
@@ -170,6 +184,23 @@ export function useCampaign() {
       setClaimLoading(false);
     }
   }, [claimLoading, offer, visitorId]);
+
+  // Handle countdown transition when reaching 0s (for live launch)
+  const handleCountdownComplete = useCallback(() => {
+    const liveTiming = {
+      name: CAMPAIGN_CONFIG.name,
+      active: true,
+      status: 'ACTIVE',
+      startTimestamp: Date.now() - 1000,
+      endTimestamp: Date.now() + 7 * 86400000,
+      remainingToEnd: 7 * 86400000,
+      isDevOverride: isDev
+    };
+    setTiming(liveTiming);
+    if (!hasSpun) {
+      setModalView('PROMO');
+    }
+  }, [hasSpun, isDev]);
 
   // Analytics helper
   const trackEvent = useCallback((type, metadata = {}) => {
@@ -221,7 +252,9 @@ export function useCampaign() {
     spinWheel,
     completeSpinAnimation,
     submitClaim,
+    handleCountdownComplete,
     trackEvent,
-    refreshStatus: () => fetchStatus(visitorId)
+    refreshStatus: () => fetchStatus(visitorId),
+    isDev
   };
 }

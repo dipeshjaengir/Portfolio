@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CAMPAIGN_CONFIG } from '../../data/campaignConfig';
 
-export const CampaignCountdown = React.memo(({ targetTimestamp, label = 'THE SALE GOES LIVE IN' }) => {
+export const CampaignCountdown = React.memo(({ targetTimestamp, label = 'THE SALE GOES LIVE IN', onCountdownZero }) => {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -19,6 +19,9 @@ export const CampaignCountdown = React.memo(({ targetTimestamp, label = 'THE SAL
 
       if (diff <= 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: true });
+        if (onCountdownZero) {
+          onCountdownZero();
+        }
         return;
       }
 

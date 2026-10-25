@@ -4,11 +4,17 @@ import * as db from './db.js';
 
 export const campaignRouter = express.Router();
 
+function getDevOverride(req) {
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) return null;
+  return req.headers['x-test-mode'] || req.query.testMode || null;
+}
+
 // GET /api/campaign/status
 campaignRouter.get('/status', async (req, res) => {
   try {
     const visitorId = req.query.visitorId;
-    const timing = getCampaignTimingStatus();
+    const testMode = getDevOverride(req);
+    const timing = getCampaignTimingStatus(Date.now(), testMode);
     let existingOffer = null;
     let isExpired = false;
 
@@ -40,7 +46,8 @@ campaignRouter.get('/status', async (req, res) => {
 campaignRouter.post('/spin', async (req, res) => {
   try {
     const { visitorId } = req.body || {};
-    const result = await processSpin(visitorId);
+    const testMode = getDevOverride(req);
+    const result = await processSpin(visitorId, null, testMode);
 
     if (!result.success) {
       return res.status(result.status || 400).json(result);
@@ -56,7 +63,8 @@ campaignRouter.post('/spin', async (req, res) => {
 // POST /api/campaign/claim
 campaignRouter.post('/claim', async (req, res) => {
   try {
-    const result = await processClaim(req.body || {});
+    const testMode = getDevOverride(req);
+    const result = await processClaim(req.body || {}, null, testMode);
 
     if (!result.success) {
       return res.status(result.status || 400).json(result);

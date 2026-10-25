@@ -36,8 +36,84 @@ export function selectWeightedOutcome() {
 }
 
 // Check campaign active status against exact timestamps
-export function getCampaignTimingStatus(currentTimestamp = Date.now()) {
+export function getCampaignTimingStatus(currentTimestamp = Date.now(), devOverride = null) {
   const { startTimestamp, endTimestamp, timezone, name } = CAMPAIGN_CONFIG;
+
+  const isDev = process.env.NODE_ENV !== 'production' && !process.env.VERCEL;
+
+  // Local development overrides for manual UI testing
+  if (isDev && devOverride) {
+    if (devOverride === 'ACTIVE' || devOverride === 'LIVE') {
+      return {
+        name,
+        timezone,
+        status: 'ACTIVE',
+        active: true,
+        serverTime: currentTimestamp,
+        startTimestamp: currentTimestamp - 10000,
+        endTimestamp: currentTimestamp + 7 * 86400000,
+        remainingToEnd: 7 * 86400000,
+        isDevOverride: true
+      };
+    }
+    if (devOverride === 'BEFORE') {
+      return {
+        name,
+        timezone,
+        status: 'BEFORE',
+        active: false,
+        serverTime: currentTimestamp,
+        startTimestamp,
+        endTimestamp,
+        remainingToStart: Math.max(0, startTimestamp - currentTimestamp),
+        message: 'Birthday Sale begins on 26 October 2026, 12:00 AM IST',
+        isDevOverride: true
+      };
+    }
+    if (devOverride === 'COUNTDOWN_10S') {
+      const target = currentTimestamp + 10000;
+      return {
+        name,
+        timezone,
+        status: 'BEFORE',
+        active: false,
+        serverTime: currentTimestamp,
+        startTimestamp: target,
+        endTimestamp: target + 7 * 86400000,
+        remainingToStart: 10000,
+        message: 'Birthday Sale begins in 10 seconds (Test Simulation)',
+        isDevOverride: true
+      };
+    }
+    if (devOverride === 'ENDED') {
+      return {
+        name,
+        timezone,
+        status: 'ENDED',
+        active: false,
+        serverTime: currentTimestamp,
+        startTimestamp,
+        endTimestamp,
+        message: 'Birthday Sale ended on 2 November 2026, 12:00 AM IST. Valid issued offers remain claimable within their 7-day window.',
+        isDevOverride: true
+      };
+    }
+  }
+
+  // By default in local development, activate immediately so user can test the live wheel
+  if (isDev && devOverride === null) {
+    return {
+      name,
+      timezone,
+      status: 'ACTIVE',
+      active: true,
+      serverTime: currentTimestamp,
+      startTimestamp: currentTimestamp - 10000,
+      endTimestamp: currentTimestamp + 7 * 86400000,
+      remainingToEnd: 7 * 86400000,
+      isDevOverride: true
+    };
+  }
 
   if (currentTimestamp < startTimestamp) {
     return {
@@ -79,13 +155,13 @@ export function getCampaignTimingStatus(currentTimestamp = Date.now()) {
 }
 
 // Handle visitor spin
-export async function processSpin(visitorId, forcedTimestamp = null) {
+export async function processSpin(visitorId, forcedTimestamp = null, devOverride = null) {
   if (!visitorId || typeof visitorId !== 'string' || visitorId.trim().length < 5) {
     return { success: false, status: 400, error: 'A valid visitor identifier is required', code: 'INVALID_VISITOR_ID' };
   }
 
   const now = forcedTimestamp || Date.now();
-  const timing = getCampaignTimingStatus(now);
+  const timing = getCampaignTimingStatus(now, devOverride);
 
   // Check if visitor already has an offer
   const existingOffer = await db.getOfferByVisitorId(visitorId);
@@ -258,7 +334,7 @@ Visitor ID: ${offer.visitorId}
 }
 
 // Handle offer claim and inquiry submission
-export async function processClaim(claimPayload, forcedTimestamp = null) {
+export async function processClaim(claimPayload, forcedTimestamp = null, devOverride = null) {
   const { offerId, visitorId, name, email, projectType, requirements } = claimPayload;
 
   if (!offerId || !visitorId) {
@@ -275,6 +351,32 @@ export async function processClaim(claimPayload, forcedTimestamp = null) {
   }
   if (!requirements || !requirements.trim()) {
     return { success: false, status: 400, error: 'Please describe your project requirements', code: 'MISSING_REQUIREMENTS' };
+  }
+
+  // Safe development test bypass (e.g. Preview Free Prize)
+  if (offerId.startsWith('TEST-') || claimPayload.isTestPreview) {
+    console.log('[TEST MODE] Simulated claim submitted for test offer:', offerId);
+    return {
+      success: true,
+      message: '[TEST MODE] Simulated claim received! Real email delivery was skipped for test data.',
+      offer: {
+        offerId,
+        visitorId,
+        campaignId: CAMPAIGN_CONFIG.name,
+        prizeLabel: '100% OFF (FREE)',
+        discount: 300,
+        finalPrice: 0,
+        standardPrice: 300,
+        savings: 300,
+        isFree: true,
+        isTestPreview: true,
+        issuedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+        claimed: true,
+        inquiryStatus: 'submitted'
+      },
+      emailResult: { delivered: false, simulated: true }
+    };
   }
 
   const now = forcedTimestamp || Date.now();

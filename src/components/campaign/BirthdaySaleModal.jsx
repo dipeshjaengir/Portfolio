@@ -36,13 +36,128 @@ export const BirthdaySaleModal = ({ campaign }) => {
     requirements: ''
   });
   const [formValidationError, setFormValidationError] = useState('');
+  const [copiedDraft, setCopiedDraft] = useState(false);
 
   const isBeforeLaunch = timing?.status === 'BEFORE';
   const isActive = Boolean(timing?.active);
+  const isEnded = timing?.status === 'ENDED';
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const formatExpiryIST = (isoString) => {
+    if (!isoString) return '';
+    try {
+      return new Date(isoString).toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }) + ' IST';
+    } catch {
+      return isoString;
+    }
+  };
+
+  // Generate URL-encoded mailto: link addressed to dipeshjangir12@gmail.com
+  const generateMailtoLink = (data = formData) => {
+    const recipient = CAMPAIGN_CONFIG?.inquiryEmail || 'dipeshjangir12@gmail.com';
+    const isFree = Boolean(offer?.isFree || offer?.finalPrice === 0 || offer?.discount === 300);
+    const discountVal = offer?.discount ?? offer?.savings ?? 200;
+    const finalPriceVal = offer?.finalPrice !== undefined ? offer.finalPrice : Math.max(0, 300 - discountVal);
+
+    const subject = isFree
+      ? `Birthday Sale Website Claim — 100% OFF (FREE Basic Portfolio) [${offer?.offerId || 'OFFER'}]`
+      : `Birthday Sale Website Claim — $${discountVal} OFF ($${finalPriceVal} Final Price) [${offer?.offerId || 'OFFER'}]`;
+
+    const body = `Hi Dipesh,
+
+I would like to claim my Birthday Sale website development deal!
+
+==============================
+VISITOR & PROJECT DETAILS
+==============================
+- Full Name: ${data.name || '[Your Name]'}
+- Email Address: ${data.email || '[Your Email]'}
+- Project Type / Scope: ${data.projectType || 'Personal Portfolio Website'}
+- Target Budget / Final Price: $${finalPriceVal} USD
+- Project Requirements:
+${data.requirements || '[Describe your project vision, pages, and goals]'}
+
+==============================
+OFFER & VOUCHER SPECIFICATIONS
+==============================
+- Campaign: ${CAMPAIGN_CONFIG.name || 'Dipesh Birthday Sale 2026'}
+- Unique Offer ID: ${offer?.offerId || 'N/A'}
+- Winning Discount: ${isFree ? '100% OFF (FREE Basic Portfolio)' : `$${discountVal} OFF`}
+- Standard Package Price: $300 USD
+- Final Development Price: $${finalPriceVal} USD${isFree ? ' (FREE Basic Portfolio Prize)' : ''}
+- Total Client Savings: $${discountVal} USD
+- Issue Date: ${offer?.issuedAt ? formatExpiryIST(offer.issuedAt) : 'N/A'}
+- Expiration Date: ${formatExpiryIST(offer?.expiresAt)} (Valid for 7 days)
+- Verification Status: AUTHENTICATED / VALID
+
+Looking forward to hearing from you!`;
+
+    return `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const handleCopyEmailDraft = async () => {
+    const isFree = Boolean(offer?.isFree || offer?.finalPrice === 0 || offer?.discount === 300);
+    const discountVal = offer?.discount ?? offer?.savings ?? 200;
+    const finalPriceVal = offer?.finalPrice !== undefined ? offer.finalPrice : Math.max(0, 300 - discountVal);
+
+    const draftText = `To: ${CAMPAIGN_CONFIG?.inquiryEmail || 'dipeshjangir12@gmail.com'}
+Subject: Birthday Sale Website Claim — ${isFree ? '100% OFF (FREE Basic Portfolio)' : `$${discountVal} OFF`} [${offer?.offerId || 'OFFER'}]
+
+Hi Dipesh,
+
+I would like to claim my Birthday Sale website development deal!
+
+==============================
+VISITOR & PROJECT DETAILS
+==============================
+- Full Name: ${formData.name || '[Your Name]'}
+- Email Address: ${formData.email || '[Your Email]'}
+- Project Type / Scope: ${formData.projectType || 'Personal Portfolio Website'}
+- Target Budget / Final Price: $${finalPriceVal} USD
+- Project Requirements:
+${formData.requirements || '[Describe your project vision, pages, and goals]'}
+
+==============================
+OFFER & VOUCHER SPECIFICATIONS
+==============================
+- Campaign: ${CAMPAIGN_CONFIG.name || 'Dipesh Birthday Sale 2026'}
+- Unique Offer ID: ${offer?.offerId || 'N/A'}
+- Winning Discount: ${isFree ? '100% OFF (FREE Basic Portfolio)' : `$${discountVal} OFF`}
+- Standard Package Price: $300 USD
+- Final Development Price: $${finalPriceVal} USD${isFree ? ' (FREE Basic Portfolio Prize)' : ''}
+- Total Client Savings: $${discountVal} USD
+- Issue Date: ${offer?.issuedAt ? formatExpiryIST(offer.issuedAt) : 'N/A'}
+- Expiration Date: ${formatExpiryIST(offer?.expiresAt)} (Valid for 7 days)
+- Verification Status: AUTHENTICATED / VALID`;
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(draftText);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = draftText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopiedDraft(true);
+      setTimeout(() => setCopiedDraft(false), 3000);
+    } catch (err) {
+      console.warn('Clipboard copy fallback:', err);
+    }
   };
 
   const handleClaimSubmit = async (e) => {
@@ -64,62 +179,18 @@ export const BirthdaySaleModal = ({ campaign }) => {
     }
 
     try {
+      // 1. Build and open the visitor's default email client via mailto:
+      const mailtoUrl = generateMailtoLink(formData);
+      window.location.href = mailtoUrl;
+
+      // 2. Submit claim record to persist inquiry status in db/state
       await submitClaim(formData);
-    } catch {
-      // Handled in hook state
+    } catch (err) {
+      console.warn('Claim record note:', err);
+    } finally {
+      // 3. Transition modal to the confirmation screen
+      setModalView('CONFIRMATION');
     }
-  };
-
-  const formatExpiryIST = (isoString) => {
-    if (!isoString) return '';
-    try {
-      return new Date(isoString).toLocaleString('en-IN', {
-        timeZone: 'Asia/Kolkata',
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      }) + ' IST';
-    } catch {
-      return isoString;
-    }
-  };
-
-  // Generate mailto: link for reliable email fallback to dipeshjangir12@gmail.com
-  const generateMailtoLink = () => {
-    const recipient = CAMPAIGN_CONFIG?.inquiryEmail || 'dipeshjangir12@gmail.com';
-    const isFree = Boolean(offer?.isFree || offer?.finalPrice === 0 || offer?.discount === 300);
-    const discountVal = offer?.discount ?? offer?.savings ?? 200;
-    const finalPriceVal = offer?.finalPrice !== undefined ? offer.finalPrice : (300 - discountVal);
-    const subject = isFree
-      ? `Birthday Sale Website Inquiry — 100% OFF (FREE Basic Portfolio) (${offer?.offerId || ''})`
-      : `Birthday Sale Website Inquiry — $${discountVal} OFF (${offer?.offerId || ''})`;
-
-    const body = `Hi Dipesh,
-
-I would like to claim my Birthday Sale website development offer!
-
-CLIENT DETAILS:
-- Name: ${formData.name || '[Your Name]'}
-- Email: ${formData.email || '[Your Email]'}
-- Project Type: ${formData.projectType || 'Personal Portfolio Website'}
-
-OFFER DETAILS:
-- Offer ID: ${offer?.offerId || 'N/A'}
-- Unlocked Discount: ${isFree ? '100% OFF (FREE Basic Portfolio)' : `$${discountVal} OFF`}
-- Standard Package: $300
-- Final Development Price: $${finalPriceVal}${isFree ? ' (FREE Basic Portfolio)' : ''}
-- Client Savings: $${discountVal}
-- Valid Until: ${formatExpiryIST(offer?.expiresAt)}
-
-PROJECT REQUIREMENTS:
-${formData.requirements || '[Describe your project vision and goals]'}
-
-Looking forward to hearing from you!`;
-
-    return `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   // Smooth scroll to portfolio without page reload
@@ -259,6 +330,7 @@ Looking forward to hearing from you!`;
                   <CampaignCountdown
                     targetTimestamp={timing?.startTimestamp || CAMPAIGN_CONFIG.startTimestamp}
                     label="THE SALE GOES LIVE IN"
+                    onCountdownZero={campaign.handleCountdownComplete}
                   />
                 </div>
 
@@ -321,6 +393,47 @@ Looking forward to hearing from you!`;
             )}
 
             {/* ======================================================== */}
+            {/* VIEW: CAMPAIGN CONCLUDED / ENDED                         */}
+            {/* ======================================================== */}
+            {isEnded && modalView === 'PROMO' && !offer && (
+              <div className="flex flex-col items-center space-y-3.5">
+                <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-950/70 border border-blue-500/40 rounded-full text-sky-400 font-mono text-xs font-bold tracking-wider uppercase shadow-[0_0_12px_rgba(0,140,255,0.2)]">
+                  <span>🎂 BIRTHDAY SALE — CONCLUDED</span>
+                </div>
+
+                <div className="space-y-0.5">
+                  <h3 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white uppercase leading-tight">
+                    THE BIRTHDAY SALE
+                  </h3>
+                  <h3 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-zinc-400 uppercase leading-tight">
+                    HAS CONCLUDED
+                  </h3>
+                </div>
+
+                <p className="text-zinc-300 font-sans text-xs sm:text-sm font-normal leading-relaxed max-w-sm">
+                  Thank you to everyone who participated! Wheel spinning is now closed. If you already unlocked an offer, it remains redeemable within its 7-day validity period.
+                </p>
+
+                <div className="w-full py-3.5 px-4 bg-gradient-to-b from-blue-950/30 to-[#071126]/50 border border-blue-500/20 rounded-2xl text-center space-y-1">
+                  <span className="font-mono text-xs text-sky-300 font-bold uppercase tracking-wider">
+                    LOOKING FOR A WEBSITE?
+                  </span>
+                  <p className="text-zinc-400 text-xs">
+                    Standard development inquiries are always open. Explore my portfolio below to get in touch.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleExplorePortfolio}
+                  className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-700 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-400 text-white font-display font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl shadow-[0_0_20px_rgba(0,140,255,0.3)] cursor-pointer transition-all"
+                >
+                  Explore My Portfolio →
+                </button>
+              </div>
+            )}
+
+            {/* ======================================================== */}
             {/* VIEW 2: LIVE (WHEEL ACTIVE) — RIGHT SIDE OF REFERENCE     */}
             {/* ======================================================== */}
             {((isActive && modalView === 'PROMO') || modalView === 'WHEEL') && (
@@ -356,7 +469,11 @@ Looking forward to hearing from you!`;
                 />
 
                 {/* 3-Column Offer Summary Panel (Directly Below Wheel) */}
-                <OfferSummaryPanel offer={offer} standardPrice={CAMPAIGN_CONFIG.standardPrice} />
+                <OfferSummaryPanel
+                  offer={offer}
+                  standardPrice={CAMPAIGN_CONFIG.standardPrice}
+                  isSpinning={isSpinning}
+                />
 
                 {error && (
                   <div className="w-full p-2.5 bg-red-950/50 border border-red-500/40 rounded-xl text-xs text-red-300 flex items-center gap-2">
@@ -374,7 +491,7 @@ Looking forward to hearing from you!`;
               <div className="flex flex-col items-center space-y-3.5">
                 {/* Congratulations Header */}
                 <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-950/70 border border-blue-500/40 rounded-full text-sky-400 font-mono text-xs font-bold tracking-wider uppercase shadow-[0_0_15px_rgba(0,140,255,0.3)]">
-                  <Sparkles className="w-3.5 h-3.5 text-sky-300" />
+                  
                   <span>CONGRATULATIONS! OFFER UNLOCKED</span>
                 </div>
 
@@ -477,27 +594,16 @@ Looking forward to hearing from you!`;
                     <p className="text-xs text-red-400 font-mono">{formValidationError}</p>
                   )}
 
-                  {/* Submit Button */}
+                  {/* Single Primary Claim Button */}
                   <button
                     type="submit"
                     disabled={claimLoading}
                     className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-700 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-400 hover:to-cyan-300 text-white font-display font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl shadow-[0_0_25px_rgba(0,140,255,0.45)] cursor-pointer transition-all disabled:opacity-50 disabled:cursor-wait"
                   >
                     {claimLoading
-                      ? 'SUBMITTING INQUIRY...'
-                      : (offer.isFree || offer.finalPrice === 0)
-                      ? 'CLAIM FREE BASIC PORTFOLIO ($0)'
-                      : `CLAIM DEAL FOR $${offer.finalPrice !== undefined ? offer.finalPrice : (300 - (offer.discount || offer.savings))}`}
+                      ? 'OPENING EMAIL APP...'
+                      : `CLAIM DEAL FOR $${offer.finalPrice !== undefined ? offer.finalPrice : Math.max(0, 300 - (offer.discount || offer.savings))}`}
                   </button>
-
-                  {/* Mailto Fallback */}
-                  <a
-                    href={generateMailtoLink()}
-                    className="w-full py-2.5 px-3 bg-blue-950/60 hover:bg-blue-900/60 border border-blue-500/30 text-sky-300 font-mono text-[11px] rounded-xl flex items-center justify-center gap-1.5 transition-all text-center cursor-pointer"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-sky-400" />
-                    <span>Send via Direct Email App (dipeshjangir12@gmail.com)</span>
-                  </a>
                 </form>
 
                 {/* Scope Accordion */}
@@ -506,21 +612,68 @@ Looking forward to hearing from you!`;
             )}
 
             {/* ======================================================== */}
-            {/* VIEW 4: CONFIRMATION / SUCCESS                           */}
+            {/* VIEW 4: CONFIRMATION / EMAIL DRAFT OPENED                */}
             {/* ======================================================== */}
             {modalView === 'CONFIRMATION' && offer && (
               <div className="flex flex-col items-center space-y-3.5">
                 <div className="w-14 h-14 rounded-full bg-blue-950 border border-sky-400 flex items-center justify-center shadow-[0_0_30px_rgba(0,140,255,0.5)]">
-                  <CheckCircle2 className="w-7 h-7 text-sky-400" />
+                  <Mail className="w-7 h-7 text-sky-400" />
                 </div>
 
                 <div className="space-y-1">
                   <h3 className="font-display text-2xl font-black text-white uppercase">
-                    INQUIRY SUBMITTED!
+                    EMAIL DRAFT OPENED!
                   </h3>
-                  <p className="text-zinc-300 text-xs sm:text-sm">
-                    Thank you! I will review your project details and get back to you within 24 hours.
+                  <p className="font-display text-xs sm:text-sm font-bold text-sky-400 uppercase tracking-wide">
+                    Please review and send the drafted email in your email app.
                   </p>
+                </div>
+
+                {/* Explicit Explanation */}
+                <div className="w-full p-3.5 bg-blue-950/60 border border-sky-400/30 rounded-2xl text-left space-y-1.5">
+                  <p className="text-xs text-zinc-300 leading-relaxed">
+                    Your inquiry details and voucher code (<strong className="text-sky-300 font-mono">{offer.offerId}</strong>) have been prefilled into your default email application.
+                  </p>
+                  <p className="text-xs text-sky-200">
+                    To finalize your inquiry, simply switch to your email app and click <strong className="text-white">Send</strong>.
+                  </p>
+                </div>
+
+                {/* Fallback Instructions & Direct Email Box */}
+                <div className="w-full p-3.5 bg-[#060D1E] border border-blue-500/30 rounded-2xl text-left space-y-2.5">
+                  <span className="font-mono text-[11px] font-bold text-sky-400 uppercase tracking-wider block">
+                    Didn't see your email app open?
+                  </span>
+                  <p className="text-xs text-zinc-300 leading-relaxed">
+                    If your email app did not open, you can send your details directly to{' '}
+                    <a
+                      href={generateMailtoLink(formData)}
+                      className="text-sky-400 underline font-semibold hover:text-sky-300"
+                    >
+                      dipeshjangir12@gmail.com
+                    </a>{' '}
+                    with your Offer ID: <strong className="font-mono text-white font-bold">{offer.offerId}</strong>.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        window.location.href = generateMailtoLink(formData);
+                      }}
+                      className="flex-1 py-2 px-3 bg-blue-900/40 hover:bg-blue-800/60 border border-blue-500/40 rounded-xl text-sky-300 font-mono text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Try Opening Email App Again</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyEmailDraft}
+                      className="flex-1 py-2 px-3 bg-blue-900/40 hover:bg-blue-800/60 border border-blue-500/40 rounded-xl text-sky-300 font-mono text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <span>{copiedDraft ? '✓ Copied to Clipboard!' : 'Copy Email Details'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* 3-Column Offer Summary Panel */}
@@ -529,13 +682,23 @@ Looking forward to hearing from you!`;
                 {/* Offer Screenshot Voucher Card */}
                 <OfferScreenshotCard offer={offer} formatExpiryIST={formatExpiryIST} />
 
-                <button
-                  type="button"
-                  onClick={() => dismissPopup(48)}
-                  className="w-full py-3 bg-gradient-to-r from-blue-700 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-400 text-white font-display font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer mt-2 shadow-[0_0_20px_rgba(0,140,255,0.3)]"
-                >
-                  Done / Explore Portfolio
-                </button>
+                {/* Actions: Edit Form (Preserves inputs) / Done */}
+                <div className="w-full flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setModalView('CLAIM')}
+                    className="flex-1 py-2.5 px-3 bg-blue-950/50 hover:bg-blue-900/50 border border-blue-500/30 text-zinc-300 hover:text-white font-mono text-xs rounded-xl transition-all cursor-pointer"
+                  >
+                    ← Edit Form Inputs
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => dismissPopup(48)}
+                    className="flex-1 py-2.5 px-3 bg-gradient-to-r from-blue-700 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-400 text-white font-display font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-[0_0_20px_rgba(0,140,255,0.3)]"
+                  >
+                    Done / Explore Portfolio
+                  </button>
+                </div>
               </div>
             )}
 
@@ -571,38 +734,62 @@ Looking forward to hearing from you!`;
                 {/* 3-Column Offer Summary Panel */}
                 <OfferSummaryPanel offer={offer} standardPrice={CAMPAIGN_CONFIG.standardPrice} />
 
-                <div className="w-full p-3 bg-[#060D1E] border border-blue-500/30 rounded-xl text-left text-xs space-y-1">
-                  <div className="flex justify-between text-zinc-400 font-mono text-[11px]">
-                    <span>Voucher Code:</span>
-                    <strong className="text-white">{offer.offerId}</strong>
-                  </div>
-                  <div className="flex justify-between text-zinc-400 font-mono text-[11px]">
-                    <span>Valid Until:</span>
-                    <strong className="text-sky-400">{formatExpiryIST(offer.expiresAt)}</strong>
-                  </div>
-                  <div className="flex justify-between text-zinc-400 font-mono text-[11px]">
-                    <span>Status:</span>
-                    <strong className={offer.claimed ? 'text-emerald-400' : 'text-amber-400'}>
-                      {offer.claimed ? 'Inquiry Submitted' : 'Unclaimed — Ready to Redeem'}
-                    </strong>
-                  </div>
-                </div>
+                {/* Offer Expiry Check */}
+                {(() => {
+                  const isOfferExpired = Boolean(offer.isExpired || (offer.expiresAt && new Date(offer.expiresAt).getTime() < Date.now()));
 
-                {!offer.claimed ? (
-                  <button
-                    type="button"
-                    onClick={() => setModalView('CLAIM')}
-                    className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-700 via-sky-500 to-cyan-400 text-white font-display font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl shadow-[0_0_25px_rgba(0,140,255,0.4)] cursor-pointer"
-                  >
-                    Proceed to Claim Form (
-                    {(offer.isFree || offer.finalPrice === 0)
-                      ? 'FREE / $0'
-                      : `$${offer.finalPrice !== undefined ? offer.finalPrice : (300 - (offer.discount || offer.savings))}`}
-                    )
-                  </button>
-                ) : (
-                  <OfferScreenshotCard offer={offer} formatExpiryIST={formatExpiryIST} />
-                )}
+                  return (
+                    <>
+                      <div className="w-full p-3 bg-[#060D1E] border border-blue-500/30 rounded-xl text-left text-xs space-y-1">
+                        <div className="flex justify-between text-zinc-400 font-mono text-[11px]">
+                          <span>Voucher Code:</span>
+                          <strong className="text-white">{offer.offerId}</strong>
+                        </div>
+                        <div className="flex justify-between text-zinc-400 font-mono text-[11px]">
+                          <span>Valid Until:</span>
+                          <strong className={isOfferExpired ? 'text-red-400' : 'text-sky-400'}>
+                            {formatExpiryIST(offer.expiresAt)}
+                          </strong>
+                        </div>
+                        <div className="flex justify-between text-zinc-400 font-mono text-[11px]">
+                          <span>Status:</span>
+                          <strong className={isOfferExpired ? 'text-red-400' : offer.claimed ? 'text-emerald-400' : 'text-amber-400'}>
+                            {isOfferExpired
+                              ? 'Expired (7-Day Validity Passed)'
+                              : offer.claimed
+                              ? 'Inquiry Submitted'
+                              : 'Unclaimed — Ready to Redeem'}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {isOfferExpired ? (
+                        <div className="w-full p-3 bg-red-950/40 border border-red-500/40 rounded-xl text-center space-y-1">
+                          <p className="text-red-300 font-mono text-xs font-bold uppercase tracking-wider">
+                            ⚠️ THIS OFFER HAS EXPIRED
+                          </p>
+                          <p className="text-zinc-400 text-[11px]">
+                            Birthday Sale vouchers are valid for exactly 7 days from issuance. This offer is no longer redeemable.
+                          </p>
+                        </div>
+                      ) : !offer.claimed ? (
+                        <button
+                          type="button"
+                          onClick={() => setModalView('CLAIM')}
+                          className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-700 via-sky-500 to-cyan-400 text-white font-display font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl shadow-[0_0_25px_rgba(0,140,255,0.4)] cursor-pointer"
+                        >
+                          Proceed to Claim Form (
+                          {(offer.isFree || offer.finalPrice === 0)
+                            ? 'FREE / $0'
+                            : `$${offer.finalPrice !== undefined ? offer.finalPrice : (300 - (offer.discount || offer.savings))}`}
+                          )
+                        </button>
+                      ) : (
+                        <OfferScreenshotCard offer={offer} formatExpiryIST={formatExpiryIST} />
+                      )}
+                    </>
+                  );
+                })()}
 
                 <button
                   type="button"
