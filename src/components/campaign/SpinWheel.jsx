@@ -27,6 +27,12 @@ export const SpinWheel = React.memo(({ onSpin, onAnimationComplete, disabled, is
       const result = await onSpin();
       if (!result) return; // If API failed or rejected, do NOT animate to a fake outcome
 
+      // If visitor has already spun, immediately complete and show their existing offer
+      if (result.alreadySpun) {
+        onAnimationComplete();
+        return;
+      }
+
       const targetIndex = result.outcomeIndex;
       // Segment 0 is centered at 12 o'clock (0 deg). Segment i center is at i * 45 deg.
       const centerAngle = targetIndex * segmentAngle;

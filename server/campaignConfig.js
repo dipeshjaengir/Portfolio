@@ -13,16 +13,25 @@ export const CAMPAIGN_CONFIG = {
   instagramUrl: 'https://www.instagram.com/_dipesh2.0/',
 
   // 9-segment wheel configuration:
-  // Segment 1: $200 OFF (24.9975%) -> Final Price $100
-  // Segment 2: $180 OFF (19.9980%) -> Final Price $120
-  // Segment 3: $150 OFF (17.9982%) -> Final Price $150
-  // Segment 4: $100 OFF (16.9983%) -> Final Price $200
-  // Segment 5: $80 OFF  (7.9992%)  -> Final Price $220
-  // Segment 6: $50 OFF  (4.9995%)  -> Final Price $250
-  // Segment 7: $30 OFF  (3.9996%)  -> Final Price $270
-  // Segment 8: $100 OFF (2.9997%)  -> Final Price $200
+  // Segment 1: $200 OFF (18.0000%) -> Final Price $100
+  // Segment 2: $180 OFF (22.0000%) -> Final Price $120
+  // Segment 3: $150 OFF (28.0000%) -> Final Price $150
+  // Segment 4: $100 OFF (9.5000%)  -> Final Price $200
+  // Segment 5: $80 OFF  (9.0000%)  -> Final Price $220
+  // Segment 6: $50 OFF  (5.0000%)  -> Final Price $250
+  // Segment 7: $30 OFF  (2.9900%)  -> Final Price $270
+  // Segment 8: $100 OFF (5.5000%)  -> Final Price $200
   // Segment 9: 100% OFF (0.0100%)  -> Final Price $0 (FREE Basic Portfolio package)
   // Total Probability = 100.000000%
+  // Prize Hierarchy:
+  // 1. $150 OFF: 28.00% (Highest)
+  // 2. $180 OFF: 22.00% (Second highest)
+  // 3. $200 OFF: 18.00% (Third highest)
+  // 4. $100 OFF: 15.00% (Fourth highest: 9.50% + 5.50%)
+  // 5. $80 OFF:   9.00% (Fifth highest)
+  // 6. $50 OFF:   5.00% (Sixth highest)
+  // 7. $30 OFF:   2.99% (Seventh highest)
+  // 8. 100% OFF:  0.01% (FREE basic portfolio - exactly 0.01%)
   outcomes: [
     {
       id: 'disc_200',
@@ -31,7 +40,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$200 OFF',
       shortLabel: '$200',
       finalPrice: 100,
-      probability: 0.249975,
+      probability: 0.18,
       color: '#1D75F2', // Electric Blue slice
       textColor: '#FFFFFF',
       description: '$200 discount applied to standard $300 package'
@@ -43,7 +52,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$180 OFF',
       shortLabel: '$180',
       finalPrice: 120,
-      probability: 0.19998,
+      probability: 0.22,
       color: '#081226', // Deep Navy slice
       textColor: '#FFFFFF',
       description: '$180 discount applied to standard $300 package'
@@ -55,7 +64,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$150 OFF',
       shortLabel: '$150',
       finalPrice: 150,
-      probability: 0.179982,
+      probability: 0.28,
       color: '#1D75F2', // Electric Blue slice
       textColor: '#FFFFFF',
       description: '$150 discount applied to standard $300 package'
@@ -67,7 +76,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$100 OFF',
       shortLabel: '$100',
       finalPrice: 200,
-      probability: 0.169983,
+      probability: 0.095,
       color: '#081226', // Deep Navy slice
       textColor: '#FFFFFF',
       description: '$100 discount applied to standard $300 package'
@@ -79,7 +88,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$80 OFF',
       shortLabel: '$80',
       finalPrice: 220,
-      probability: 0.079992,
+      probability: 0.09,
       color: '#1D75F2', // Electric Blue slice
       textColor: '#FFFFFF',
       description: '$80 discount applied to standard $300 package'
@@ -91,7 +100,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$50 OFF',
       shortLabel: '$50',
       finalPrice: 250,
-      probability: 0.049995,
+      probability: 0.05,
       color: '#081226', // Deep Navy slice
       textColor: '#FFFFFF',
       description: '$50 discount applied to standard $300 package'
@@ -103,7 +112,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$30 OFF',
       shortLabel: '$30',
       finalPrice: 270,
-      probability: 0.039996,
+      probability: 0.0299,
       color: '#1D75F2', // Electric Blue slice
       textColor: '#FFFFFF',
       description: '$30 discount applied to standard $300 package'
@@ -115,7 +124,7 @@ export const CAMPAIGN_CONFIG = {
       label: '$100 OFF',
       shortLabel: '$100',
       finalPrice: 200,
-      probability: 0.029997,
+      probability: 0.055,
       color: '#081226', // Deep Navy slice
       textColor: '#FFFFFF',
       description: '$100 discount applied to standard $300 package (Segment 8)'

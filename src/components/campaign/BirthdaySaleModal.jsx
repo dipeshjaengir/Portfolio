@@ -436,7 +436,7 @@ OFFER & VOUCHER SPECIFICATIONS
             {/* ======================================================== */}
             {/* VIEW 2: LIVE (WHEEL ACTIVE) — RIGHT SIDE OF REFERENCE     */}
             {/* ======================================================== */}
-            {((isActive && modalView === 'PROMO') || modalView === 'WHEEL') && (
+            {((isActive && modalView === 'PROMO' && !offer) || (modalView === 'WHEEL' && !offer)) && (
               <div className="flex flex-col items-center space-y-3">
                 {/* Badge: BIRTHDAY SALE — LIVE NOW 🟢 */}
                 <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-950/70 border border-blue-500/40 rounded-full text-sky-400 font-mono text-xs font-bold tracking-wider uppercase shadow-[0_0_12px_rgba(0,140,255,0.2)]">
@@ -705,7 +705,7 @@ OFFER & VOUCHER SPECIFICATIONS
             {/* ======================================================== */}
             {/* VIEW 5: ALREADY SPUN / REVISITING OFFER                  */}
             {/* ======================================================== */}
-            {modalView === 'ALREADY_SPUN' && offer && (
+            {(offer && (modalView === 'ALREADY_SPUN' || ((modalView === 'PROMO' || modalView === 'WHEEL') && modalView !== 'REVEAL' && modalView !== 'CLAIM' && modalView !== 'CONFIRMATION'))) && (
               <div className="flex flex-col items-center space-y-3.5">
                 <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-950/70 border border-blue-500/40 rounded-full text-sky-400 font-mono text-xs font-bold tracking-wider uppercase shadow-[0_0_12px_rgba(0,140,255,0.2)]">
                   <span>🎂 YOUR BIRTHDAY SALE OFFER</span>

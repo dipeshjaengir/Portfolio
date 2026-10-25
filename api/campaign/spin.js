@@ -1,4 +1,4 @@
-import { processSpin } from '../../server/campaignService.js';
+import { processSpin, parseCookies } from '../../server/campaignService.js';
 
 function parseBody(req) {
   if (!req.body) return {};
@@ -28,12 +28,25 @@ export default async function handler(req, res) {
   }
 
   try {
+    const cookies = parseCookies(req.headers.cookie);
     const body = parseBody(req);
-    const { visitorId } = body;
-    const result = await processSpin(visitorId);
+    const visitorId = body?.visitorId || cookies['bday_vid'];
+    const clientOfferHint = body?.existingOffer || cookies['bday_offer_id'];
+
+    const result = await processSpin(visitorId, null, null, cookies, clientOfferHint);
 
     if (!result.success) {
       return res.status(result.status || 400).json(result);
+    }
+
+    // Set first-party HTTP cookies for cross-session and mobile stability
+    if (result.offer) {
+      const cookieHeaders = [
+        `bday_vid=${encodeURIComponent(result.offer.visitorId || visitorId)}; Path=/; Max-Age=31536000; SameSite=Lax`,
+        `bday_offer_id=${encodeURIComponent(result.offer.offerId)}; Path=/; Max-Age=604800; SameSite=Lax`,
+        `bday_spun=true; Path=/; Max-Age=604800; SameSite=Lax`
+      ];
+      res.setHeader('Set-Cookie', cookieHeaders);
     }
 
     return res.status(200).json(result);

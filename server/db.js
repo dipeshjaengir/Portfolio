@@ -5,7 +5,16 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
-const dataDir = path.join(rootDir, 'data');
+
+// In Vercel serverless functions, the root is read-only; /tmp is the standard writable location
+function getWritableDataDir() {
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    return '/tmp';
+  }
+  return path.join(rootDir, 'data');
+}
+
+const dataDir = getWritableDataDir();
 const offersFile = path.join(dataDir, 'campaign_offers.json');
 const analyticsFile = path.join(dataDir, 'campaign_analytics.json');
 
@@ -170,11 +179,23 @@ export async function getOfferByVisitorId(visitorId) {
     }
   }
 
-  // 3. Serverless Unconfigured Guard
+  // 3. Serverless Unconfigured Guard (Memory + /tmp file persistence)
   if (provider === 'serverless_unconfigured') {
     const offerId = memoryFallbackVisitors.get(visitorId);
-    if (!offerId) return null;
-    return memoryFallbackOffers.get(offerId) || null;
+    if (offerId && memoryFallbackOffers.has(offerId)) {
+      return memoryFallbackOffers.get(offerId);
+    }
+    // Also check writable /tmp file fallback
+    try {
+      const offers = readJsonFile(offersFile, []);
+      const found = offers.find((o) => o.visitorId === visitorId);
+      if (found) {
+        memoryFallbackVisitors.set(visitorId, found.offerId);
+        memoryFallbackOffers.set(found.offerId, found);
+        return found;
+      }
+    } catch {}
+    return null;
   }
 
   // 4. Local JSON File (Offline Dev)
@@ -201,7 +222,18 @@ export async function getOfferById(offerId) {
   }
 
   if (provider === 'serverless_unconfigured') {
-    return memoryFallbackOffers.get(offerId) || null;
+    if (memoryFallbackOffers.has(offerId)) {
+      return memoryFallbackOffers.get(offerId);
+    }
+    try {
+      const offers = readJsonFile(offersFile, []);
+      const found = offers.find((o) => o.offerId === offerId);
+      if (found) {
+        memoryFallbackOffers.set(offerId, found);
+        return found;
+      }
+    } catch {}
+    return null;
   }
 
   return withFileLock(() => {
@@ -259,15 +291,45 @@ export async function createOffer(offerData) {
     }
   }
 
-  // 3. Serverless Unconfigured Guard
+  // 3. Serverless Unconfigured Guard (Memory + /tmp file persistence)
   if (provider === 'serverless_unconfigured') {
-    console.warn('[STORAGE] Running on Vercel without persistent cloud database. Offer kept in temporary memory.');
+    // Check in-memory first
+    let existingOffer = null;
     if (memoryFallbackVisitors.has(offerData.visitorId)) {
       const existingOfferId = memoryFallbackVisitors.get(offerData.visitorId);
-      return { success: true, offer: memoryFallbackOffers.get(existingOfferId), isExisting: true };
+      existingOffer = memoryFallbackOffers.get(existingOfferId);
     }
+    // Check /tmp file
+    if (!existingOffer) {
+      try {
+        const offers = readJsonFile(offersFile, []);
+        existingOffer = offers.find((o) => o.visitorId === offerData.visitorId);
+      } catch {}
+    }
+
+    if (existingOffer) {
+      memoryFallbackVisitors.set(offerData.visitorId, existingOffer.offerId);
+      memoryFallbackOffers.set(existingOffer.offerId, existingOffer);
+      return { success: true, offer: existingOffer, isExisting: true };
+    }
+
+    // Save to memory
     memoryFallbackVisitors.set(offerData.visitorId, offerData.offerId);
     memoryFallbackOffers.set(offerData.offerId, offerData);
+
+    // Persist to /tmp file
+    withFileLock(() => {
+      try {
+        const offers = readJsonFile(offersFile, []);
+        if (!offers.find((o) => o.visitorId === offerData.visitorId)) {
+          offers.push(offerData);
+          writeJsonFileAtomic(offersFile, offers);
+        }
+      } catch (err) {
+        console.warn('[STORAGE] /tmp write fallback note:', err);
+      }
+    });
+
     return { success: true, offer: offerData, isExisting: false };
   }
 
@@ -321,10 +383,26 @@ export async function claimOffer(offerId, visitorId, claimData) {
 
   // 3. Serverless Unconfigured Guard
   if (provider === 'serverless_unconfigured') {
-    const existing = memoryFallbackOffers.get(offerId);
+    let existing = memoryFallbackOffers.get(offerId);
+    if (!existing) {
+      try {
+        const offers = readJsonFile(offersFile, []);
+        existing = offers.find((o) => o.offerId === offerId && o.visitorId === visitorId);
+      } catch {}
+    }
     if (!existing || existing.visitorId !== visitorId) return null;
     const updated = { ...existing, ...updatePayload };
     memoryFallbackOffers.set(offerId, updated);
+    withFileLock(() => {
+      try {
+        const offers = readJsonFile(offersFile, []);
+        const idx = offers.findIndex((o) => o.offerId === offerId && o.visitorId === visitorId);
+        if (idx !== -1) {
+          offers[idx] = updated;
+          writeJsonFileAtomic(offersFile, offers);
+        }
+      } catch {}
+    });
     return updated;
   }
 

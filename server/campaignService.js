@@ -154,77 +154,142 @@ export function getCampaignTimingStatus(currentTimestamp = Date.now(), devOverri
   };
 }
 
+// Active spin mutex map (visitorId -> Promise) to atomically handle concurrent / simultaneous requests
+const activeSpinLocks = new Map();
+
+// Helper to parse cookies from header
+export function parseCookies(cookieHeader) {
+  const cookies = {};
+  if (!cookieHeader) return cookies;
+  const pairs = cookieHeader.split(';');
+  for (const pair of pairs) {
+    const idx = pair.indexOf('=');
+    if (idx > 0) {
+      const key = pair.substring(0, idx).trim();
+      const val = pair.substring(idx + 1).trim();
+      try {
+        cookies[key] = decodeURIComponent(val);
+      } catch {
+        cookies[key] = val;
+      }
+    }
+  }
+  return cookies;
+}
+
 // Handle visitor spin
-export async function processSpin(visitorId, forcedTimestamp = null, devOverride = null) {
+export async function processSpin(visitorId, forcedTimestamp = null, devOverride = null, reqCookies = {}, existingOfferHint = null) {
   if (!visitorId || typeof visitorId !== 'string' || visitorId.trim().length < 5) {
     return { success: false, status: 400, error: 'A valid visitor identifier is required', code: 'INVALID_VISITOR_ID' };
   }
 
-  const now = forcedTimestamp || Date.now();
-  const timing = getCampaignTimingStatus(now, devOverride);
+  // Atomically handle simultaneous requests from the same visitor
+  if (activeSpinLocks.has(visitorId)) {
+    return await activeSpinLocks.get(visitorId);
+  }
 
-  // Check if visitor already has an offer
-  const existingOffer = await db.getOfferByVisitorId(visitorId);
-  if (existingOffer) {
-    const isExpired = new Date(existingOffer.expiresAt).getTime() < now;
+  const spinExecution = (async () => {
+    const now = forcedTimestamp || Date.now();
+    const timing = getCampaignTimingStatus(now, devOverride);
+
+    // Multi-layer check for existing offer:
+    // 1. Direct visitor ID
+    let existingOffer = await db.getOfferByVisitorId(visitorId);
+
+    // 2. Cookie visitor ID (if cookie has different/previous visitor ID on mobile)
+    if (!existingOffer && reqCookies?.['bday_vid'] && reqCookies['bday_vid'] !== visitorId) {
+      existingOffer = await db.getOfferByVisitorId(reqCookies['bday_vid']);
+    }
+
+    // 3. Cookie offer ID
+    if (!existingOffer && reqCookies?.['bday_offer_id']) {
+      existingOffer = await db.getOfferById(reqCookies['bday_offer_id']);
+    }
+
+    // 4. Client-side offer hint (e.g. from localStorage)
+    if (!existingOffer && existingOfferHint) {
+      const hintId = typeof existingOfferHint === 'string' ? existingOfferHint : existingOfferHint.offerId;
+      if (hintId) {
+        existingOffer = await db.getOfferById(hintId);
+        // If not in server storage but valid client-stored offer, restore it
+        if (!existingOffer && typeof existingOfferHint === 'object' && existingOfferHint.outcomeIndex !== undefined) {
+          const hintExpiry = new Date(existingOfferHint.expiresAt).getTime();
+          if (hintExpiry > now && existingOfferHint.campaignId === CAMPAIGN_CONFIG.name) {
+            existingOffer = existingOfferHint;
+            await db.createOffer(existingOfferHint).catch(() => {});
+          }
+        }
+      }
+    }
+
+    if (existingOffer) {
+      const isExpired = new Date(existingOffer.expiresAt).getTime() < now;
+      return {
+        success: true,
+        alreadySpun: true,
+        offer: existingOffer,
+        isExpired,
+        outcomeIndex: existingOffer.outcomeIndex,
+        message: "You've already unlocked your Birthday Sale offer!"
+      };
+    }
+
+    // If new visitor, enforce campaign schedule
+    if (!timing.active) {
+      if (timing.status === 'BEFORE') {
+        return { success: false, status: 403, error: timing.message, code: 'CAMPAIGN_NOT_STARTED' };
+      }
+      return { success: false, status: 403, error: timing.message, code: 'CAMPAIGN_ENDED' };
+    }
+
+    // Generate weighted outcome
+    const { outcomeIndex, outcome } = selectWeightedOutcome();
+    const issuedDate = new Date(now);
+    const expiryDate = new Date(now + CAMPAIGN_CONFIG.offerValidityDays * 24 * 60 * 60 * 1000);
+    const offerId = `BDAY-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+
+    const offerRecord = {
+      offerId,
+      visitorId,
+      campaignId: CAMPAIGN_CONFIG.name,
+      outcomeIndex,
+      segmentNumber: outcome.segmentNumber,
+      prizeId: outcome.id,
+      prizeLabel: outcome.label, // e.g. "$200 OFF" or "100% OFF (FREE)"
+      discount: outcome.discount,
+      finalPrice: outcome.finalPrice,
+      standardPrice: CAMPAIGN_CONFIG.standardPrice,
+      savings: outcome.discount,
+      isFree: Boolean(outcome.isFree),
+      issuedAt: issuedDate.toISOString(),
+      expiresAt: expiryDate.toISOString(),
+      claimed: false,
+      inquiryStatus: 'unclaimed'
+    };
+
+    const createResult = await db.createOffer(offerRecord);
+    await db.recordAnalytics({
+      type: 'SPIN_COMPLETED',
+      visitorId,
+      offerId: createResult.offer.offerId,
+      prizeId: createResult.offer.prizeId,
+      alreadySpun: createResult.isExisting
+    });
+
     return {
       success: true,
-      alreadySpun: true,
-      offer: existingOffer,
-      isExpired,
-      outcomeIndex: existingOffer.outcomeIndex,
-      message: "You've already unlocked your Birthday Sale offer!"
+      alreadySpun: createResult.isExisting,
+      outcomeIndex: createResult.offer.outcomeIndex,
+      offer: createResult.offer
     };
+  })();
+
+  activeSpinLocks.set(visitorId, spinExecution);
+  try {
+    return await spinExecution;
+  } finally {
+    activeSpinLocks.delete(visitorId);
   }
-
-  // If new visitor, enforce campaign schedule
-  if (!timing.active) {
-    if (timing.status === 'BEFORE') {
-      return { success: false, status: 403, error: timing.message, code: 'CAMPAIGN_NOT_STARTED' };
-    }
-    return { success: false, status: 403, error: timing.message, code: 'CAMPAIGN_ENDED' };
-  }
-
-  // Generate weighted outcome
-  const { outcomeIndex, outcome } = selectWeightedOutcome();
-  const issuedDate = new Date(now);
-  const expiryDate = new Date(now + CAMPAIGN_CONFIG.offerValidityDays * 24 * 60 * 60 * 1000);
-  const offerId = `BDAY-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-
-  const offerRecord = {
-    offerId,
-    visitorId,
-    campaignId: CAMPAIGN_CONFIG.name,
-    outcomeIndex,
-    segmentNumber: outcome.segmentNumber,
-    prizeId: outcome.id,
-    prizeLabel: outcome.label, // e.g. "$200 OFF" or "100% OFF (FREE)"
-    discount: outcome.discount,
-    finalPrice: outcome.finalPrice,
-    standardPrice: CAMPAIGN_CONFIG.standardPrice,
-    savings: outcome.discount,
-    isFree: Boolean(outcome.isFree),
-    issuedAt: issuedDate.toISOString(),
-    expiresAt: expiryDate.toISOString(),
-    claimed: false,
-    inquiryStatus: 'unclaimed'
-  };
-
-  const createResult = await db.createOffer(offerRecord);
-  await db.recordAnalytics({
-    type: 'SPIN_COMPLETED',
-    visitorId,
-    offerId: createResult.offer.offerId,
-    prizeId: createResult.offer.prizeId,
-    alreadySpun: createResult.isExisting
-  });
-
-  return {
-    success: true,
-    alreadySpun: createResult.isExisting,
-    outcomeIndex: createResult.offer.outcomeIndex,
-    offer: createResult.offer
-  };
 }
 
 // Handle email inquiry delivery

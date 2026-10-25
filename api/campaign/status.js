@@ -1,4 +1,4 @@
-import { getCampaignTimingStatus } from '../../server/campaignService.js';
+import { getCampaignTimingStatus, parseCookies } from '../../server/campaignService.js';
 import * as db from '../../server/db.js';
 
 export default async function handler(req, res) {
@@ -20,16 +20,38 @@ export default async function handler(req, res) {
   }
 
   try {
-    const visitorId = req.query?.visitorId;
+    const cookies = parseCookies(req.headers.cookie);
+    const visitorId = req.query?.visitorId || cookies['bday_vid'];
+    const existingOfferIdHint = req.query?.existingOfferId || cookies['bday_offer_id'];
+
     const timing = getCampaignTimingStatus();
     let existingOffer = null;
     let isExpired = false;
 
     if (visitorId) {
       existingOffer = await db.getOfferByVisitorId(visitorId);
+    }
+    if (!existingOffer && cookies['bday_vid'] && cookies['bday_vid'] !== visitorId) {
+      existingOffer = await db.getOfferByVisitorId(cookies['bday_vid']);
+    }
+    if (!existingOffer && existingOfferIdHint) {
+      existingOffer = await db.getOfferById(existingOfferIdHint);
+    }
+
+    if (existingOffer) {
+      isExpired = new Date(existingOffer.expiresAt).getTime() < Date.now();
+    }
+
+    // Set first-party cookies for persistent cross-session mobile visitor stability
+    if (visitorId) {
+      const cookieHeaders = [
+        `bday_vid=${encodeURIComponent(visitorId)}; Path=/; Max-Age=31536000; SameSite=Lax`
+      ];
       if (existingOffer) {
-        isExpired = new Date(existingOffer.expiresAt).getTime() < Date.now();
+        cookieHeaders.push(`bday_offer_id=${encodeURIComponent(existingOffer.offerId)}; Path=/; Max-Age=604800; SameSite=Lax`);
+        cookieHeaders.push(`bday_spun=true; Path=/; Max-Age=604800; SameSite=Lax`);
       }
+      res.setHeader('Set-Cookie', cookieHeaders);
     }
 
     const storageInfo = db.getStorageDiagnostics();
